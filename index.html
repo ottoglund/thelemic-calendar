@@ -1,191 +1,185 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Thelemic Calendar</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Thelemic Calendar</title>
 
-<style>
-html, body {
-  margin: 0;
-  padding: 0;
-  background: radial-gradient(circle at center, #111 0%, #000 70%);
-  color: #d4af37;
-  font-family: "Georgia", serif;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
+  <style>
+    :root{
+      --gold:#d4af37;
+      --bg:#000;
+      --panel: rgba(0,0,0,0.55);
+    }
 
-body {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 14px;
-}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(circle at center, #111 0%, #000 70%);
+      color:var(--gold);
+      font-family: Georgia, "Times New Roman", serif;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:24px;
+      box-sizing:border-box;
+    }
 
-/* ===== Gold shimmer sweep ===== */
-.app {
-  width: 100%;
-  max-width: 520px;
-  padding: 22px 18px 22px 18px;
-  border: 1px solid #d4af37;
-  border-radius: 22px;
-  box-shadow: 0 0 50px rgba(212,175,55,0.28);
-  backdrop-filter: blur(6px);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
+    .card{
+      width:min(860px, 100%);
+      border:1px solid var(--gold);
+      border-radius:24px;
+      padding:20px 18px 18px;
+      box-shadow:0 0 40px rgba(212,175,55,0.25);
+      background:var(--panel);
+      backdrop-filter: blur(6px);
+      position:relative;
+      overflow:hidden;
+    }
 
-.app::before {
-  content: "";
-  position: absolute;
-  inset: -40%;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateX(-120%) rotate(18deg);
-  background: linear-gradient(
-    90deg,
-    rgba(212,175,55,0) 0%,
-    rgba(212,175,55,0.08) 35%,
-    rgba(255,230,160,0.18) 50%,
-    rgba(212,175,55,0.08) 65%,
-    rgba(212,175,55,0) 100%
-  );
-  filter: blur(1px);
-}
+    .topbar{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+    }
 
-.app.shimmer::before {
-  animation: goldSweep 1.2s ease-out 0.15s 1 forwards;
-}
+    .btn{
+      border:1px solid rgba(212,175,55,0.55);
+      background: rgba(0,0,0,0.35);
+      color:var(--gold);
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:14px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+    .btn:active{transform: translateY(1px);}
+    .btn small{opacity:0.8}
 
-@keyframes goldSweep {
-  0% { opacity: 0; transform: translateX(-120%) rotate(18deg); }
-  15% { opacity: 1; }
-  100% { opacity: 0; transform: translateX(120%) rotate(18deg); }
-}
+    .title{
+      text-align:center;
+      font-size:44px;
+      margin:8px 0 10px;
+      letter-spacing:0.5px;
+    }
 
-/* ---------- Header ---------- */
-.headerBar {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-bottom: 6px;
-  position: relative;
-  z-index: 1;
-}
+    .main{
+      text-align:center;
+      line-height:1.55;
+      font-size:26px;
+      margin-top:6px;
+    }
+    .anno{
+      margin-top:10px;
+      font-size:40px;
+      font-weight:700;
+    }
+    .tarot{
+      margin-top:6px;
+      font-size:16px;
+      opacity:0.75;
+    }
+    .ve{
+      margin-top:10px;
+      font-size:22px;
+      opacity:0.95;
+    }
 
-button {
-  background: transparent;
-  border: 1px solid #d4af37;
-  color: #d4af37;
-  width: 40px;
-  height: 34px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 16px;
-  line-height: 1;
-}
+    .moon{
+      margin-top:14px;
+      font-size:22px;
+    }
+    .moonSub{
+      margin-top:2px;
+      font-size:20px;
+      opacity:0.92;
+    }
 
-button:hover {
-  background: rgba(212,175,55,0.1);
-}
+    .sectionTitle{
+      margin-top:18px;
+      text-align:center;
+      font-size:22px;
+      opacity:0.9;
+    }
 
-#title {
-  font-size: 32px;
-  margin: 10px 0 14px 0;
-  position: relative;
-  z-index: 1;
-}
+    .reshGrid{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    .reshItem{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 14px;
+      border-radius:18px;
+      border:1px solid rgba(212,175,55,0.18); /* subtil */
+      background: rgba(0,0,0,0.25);
+      font-size:20px;
+    }
+    .reshLeft{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .reshItem.next{
+      border-color: rgba(212,175,55,0.55);
+      box-shadow: 0 0 20px rgba(212,175,55,0.12);
+    }
 
-#mainPanel, #locLine, #reshGrid, #countdown, #notice, #footerPanel, #fatal {
-  position: relative;
-  z-index: 1;
-}
+    .countdown{
+      margin-top:12px;
+      text-align:center;
+      font-size:22px;
+      opacity:0.95;
+    }
 
-.mainLine { font-size: 22px; margin: 8px 0; }
-.annoLine { font-size: 30px; font-weight: bold; margin-top: 14px; }
-.tarotLine { font-size: 15px; opacity: 0.82; margin-top: 3px; }
-.veLine { font-size: 17px; margin-top: 10px; }
-.moonLine { font-size: 18px; margin-top: 14px; }
-.moonSub { font-size: 16px; opacity: 0.9; margin-top: 4px; }
+    .footer{
+      margin-top:18px;
+      text-align:center;
+      font-size:18px;
+      opacity:0.85;
+    }
 
-#locLine { margin-top: 16px; font-size: 16px; opacity: 0.9; }
-#reshGrid { margin-top: 10px; }
-
-.reshItem {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 14px; margin-bottom: 10px; border-radius: 16px;
-}
-.reshItem.next {
-  border: 1px solid #d4af37;
-  box-shadow: 0 0 18px rgba(212,175,55,0.22);
-}
-.reshLeft { display: flex; align-items: center; gap: 10px; }
-.reshLabel, .reshTime { font-size: 16px; }
-
-#countdown { margin-top: 10px; font-size: 16px; }
-#notice { margin-top: 6px; font-size: 13px; opacity: 0.78; }
-
-#footerPanel { margin-top: 14px; font-size: 14px; opacity: 0.8; }
-.versionLine { margin-top: 6px; font-size: 12px; opacity: 0.65; }
-
-#fatal {
-  display: none;
-  margin-top: 14px;
-  padding: 10px 12px;
-  border: 1px solid rgba(212,175,55,0.35);
-  border-radius: 14px;
-  font-size: 13px;
-  opacity: 0.85;
-  text-align: left;
-  white-space: pre-wrap;
-}
-
-/* ---------- Extra compact on iPhone ---------- */
-@media (max-width: 430px) {
-  body { padding: 10px; }
-  .app { padding: 18px 14px; }
-
-  #title { font-size: 28px; margin: 8px 0 10px 0; }
-  .mainLine { font-size: 20px; margin: 6px 0; }
-  .annoLine { font-size: 26px; margin-top: 12px; }
-  .tarotLine { font-size: 14px; }
-  .veLine { font-size: 16px; margin-top: 8px; }
-
-  .moonLine { font-size: 16px; margin-top: 10px; }
-  .moonSub { font-size: 15px; margin-top: 3px; }
-
-  #locLine { margin-top: 12px; font-size: 15px; }
-  .reshItem { padding: 9px 12px; margin-bottom: 8px; }
-  .reshLabel, .reshTime { font-size: 15px; }
-  #countdown { font-size: 15px; margin-top: 8px; }
-  #footerPanel { margin-top: 10px; font-size: 13px; }
-  .versionLine { font-size: 11px; }
-}
-</style>
-  <script type="module" crossorigin src="/thelemic-calendar/assets/index-DpqTHuKn.js"></script>
-<link rel="manifest" href="/thelemic-calendar/manifest.webmanifest"></head>
+    /* iPhone: minska just månblocken lite */
+    @media (max-width: 450px){
+      .title{font-size:38px}
+      .main{font-size:22px}
+      .anno{font-size:34px}
+      .moon{font-size:18px}
+      .moonSub{font-size:18px}
+      .reshItem{font-size:18px}
+      .countdown{font-size:20px}
+      .footer{font-size:16px}
+    }
+  </style>
+  <script type="module" crossorigin src="/thelemic-calendar/assets/index-64NdL7Dk.js"></script>
+<link rel="manifest" href="/thelemic-calendar/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/thelemic-calendar/registerSW.js"></script></head>
 
 <body>
-  <div class="app" id="appShell">
-    <div class="headerBar">
-      <button id="geoBtn" title="Använd min position">📍</button>
-      <button id="notifBtn" title="Notiser">🔔</button>
-      <button id="resetBtn" title="Återställ till Stockholm">↺</button>
+  <div class="card">
+    <div class="topbar">
+      <button class="btn" id="geoBtn" title="Använd min position">📍 <small>Plats</small></button>
+      <button class="btn" id="langBtn" title="Byt språk">🌐 <small>SV/EN</small></button>
+      <button class="btn" id="resetBtn" title="Återställ till Stockholm">↺ <small>Stockholm</small></button>
     </div>
 
-    <div id="title"></div>
-    <div id="mainPanel"></div>
+    <div class="title" id="title">—</div>
 
-    <div id="locLine"></div>
-    <div id="reshGrid"></div>
-    <div id="countdown"></div>
-    <div id="notice"></div>
+    <div class="main" id="mainPanel"></div>
 
-    <div id="footerPanel"></div>
-    <div id="fatal"></div>
+    <div class="sectionTitle" id="reshTitle">—</div>
+    <div class="reshGrid" id="reshGrid"></div>
+
+    <div class="countdown" id="countdown"></div>
+
+    <div class="footer" id="footerPanel"></div>
   </div>
 
 </body>
