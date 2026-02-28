@@ -17,7 +17,7 @@ const I18N = {
     midnight: "Midnatt",
     nextResh: "Nästa Resh",
     inWord: "om",
-    equinoxNext: "Nästa vårdagjämning ~±2h (lokal tid)",
+    equinoxNext: "Nästa Gudarnas Dagjämning ~±2h (lokal tid)",
     tarot: "Tarot",
     placeStockholm: "Stockholm",
     placeLocal: "Lokal plats",
@@ -451,7 +451,7 @@ function computeAndRender(now = new Date()){
     setText("countdown", "");
   }
 
-  // Next equinox (upcoming, rounded ~±2h) shown local time
+  // Next Equinox of the Gods (upcoming, rounded ~±2h) shown local time
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
