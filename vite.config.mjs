@@ -3,10 +3,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   base: "/thelemic-calendar/",
-  build: {
-    outDir: "docs",
-    emptyOutDir: true,
-  },
+
   plugins: [
     VitePWA({
       registerType: "autoUpdate",
@@ -15,7 +12,6 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
-        navigateFallback: "/thelemic-calendar/index.html",
       },
       manifest: {
         name: "Thelemic Calendar",
