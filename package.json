@@ -1,5 +1,6 @@
 {
-  "name": "thelema-date",
+  "name": "Thelemic Date",
+"short_name": "Thelemic Date",
   "private": true,
   "version": "0.0.0",
   "type": "module",
