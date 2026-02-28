@@ -22,8 +22,6 @@ const I18N = {
     placeStockholm: "Stockholm",
     placeLocal: "Lokal plats",
     cantGeo: "Kunde inte hämta plats (använder Stockholm).",
-    usingStockholm: "Använder Stockholm.",
-    usingLocal: "Använder lokal plats.",
     langSwedish: "Svenska",
     langEnglish: "English",
     era: "E.V.",
@@ -56,8 +54,6 @@ const I18N = {
     placeStockholm: "Stockholm",
     placeLocal: "Local",
     cantGeo: "Could not get location (using Stockholm).",
-    usingStockholm: "Using Stockholm.",
-    usingLocal: "Using local location.",
     langSwedish: "Svenska",
     langEnglish: "English",
     era: "E.V.",
@@ -74,7 +70,6 @@ const I18N = {
   }
 };
 
-// Veckodag på latin
 const weekdayLatin = [
   "Dies Solis",
   "Dies Lunae",
@@ -85,7 +80,6 @@ const weekdayLatin = [
   "Dies Saturnii",
 ];
 
-// Zodiak-tecken (latin genitiv)
 const signLatinGen = [
   "Arietis", "Tauri", "Geminorum", "Cancri", "Leonis", "Virginis",
   "Librae", "Scorpii", "Sagittarii", "Capricorni", "Aquarii", "Piscium",
@@ -123,9 +117,24 @@ function formatDateLongLocal(date, lang){
 function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 function isValidDate(d){ return d instanceof Date && !isNaN(d.getTime()); }
 
+/**
+ * Normalisera Astronomy-Engine returtyper:
+ * - Vissa versioner ger AstroTime (med .date)
+ * - andra kan ge Date direkt
+ */
+function toDate(x){
+  if (!x) return null;
+  if (x instanceof Date) return x;
+  if (x.date instanceof Date) return x.date; // AstroTime.date
+  if (typeof x.ToDate === "function") {
+    const d = x.ToDate();
+    return d instanceof Date ? d : null;
+  }
+  return null;
+}
+
 /** =========================
  *  Thelemic Year (Docosade:within)
- *  New Year at Vernal Equinox (UTC calc, displayed in local time)
  *  ========================= */
 function vernalEquinoxUTC(year) {
   let a = new Date(Date.UTC(year, 2, 19, 0, 0, 0));
@@ -175,57 +184,17 @@ function roman(n, upper = true) {
 
 /** =========================
  *  Tarot mapping (Thoth titles)
- *  docosade = outer trump
- *  within   = inner trump
  *  ========================= */
 const TRUMPS = {
   sv: [
-    "Narren",
-    "Magikern",
-    "Översteprästinnan",
-    "Kejsarinnan",
-    "Kejsaren",
-    "Hierofanten",
-    "De Älskande",
-    "Vagnen",
-    "Justering",
-    "Eremiten",
-    "Lyckohjulet",
-    "Lustan",
-    "Den Hängde",
-    "Döden",
-    "Konsten",
-    "Djävulen",
-    "Tornet",
-    "Stjärnan",
-    "Månen",
-    "Solen",
-    "Eonen",
-    "Universum"
+    "Narren","Magikern","Översteprästinnan","Kejsarinnan","Kejsaren","Hierofanten",
+    "De Älskande","Vagnen","Justering","Eremiten","Lyckohjulet","Lustan",
+    "Den Hängde","Döden","Konsten","Djävulen","Tornet","Stjärnan","Månen","Solen","Eonen","Universum"
   ],
   en: [
-    "The Fool",
-    "The Magus",
-    "The Priestess",
-    "The Empress",
-    "The Emperor",
-    "The Hierophant",
-    "The Lovers",
-    "The Chariot",
-    "Adjustment",
-    "The Hermit",
-    "Fortune",
-    "Lust",
-    "The Hanged Man",
-    "Death",
-    "Art",
-    "The Devil",
-    "The Tower",
-    "The Star",
-    "The Moon",
-    "The Sun",
-    "The Aeon",
-    "The Universe"
+    "The Fool","The Magus","The Priestess","The Empress","The Emperor","The Hierophant",
+    "The Lovers","The Chariot","Adjustment","The Hermit","Fortune","Lust",
+    "The Hanged Man","Death","Art","The Devil","The Tower","The Star","The Moon","The Sun","The Aeon","The Universe"
   ]
 };
 
@@ -237,10 +206,10 @@ function tarotFor(docosade, within, lang){
 }
 
 /** =========================
- *  Moon phase/age (approx via elongation)
+ *  Moon phase/age
  *  ========================= */
 function moonPhaseInfo(date){
-  const elong = Astronomy.MoonPhase(date); // 0=new, 180=full
+  const elong = Astronomy.MoonPhase(date);
   const phaseAngle = mod360(elong);
 
   const frac = (1 - Math.cos((phaseAngle * Math.PI) / 180)) / 2;
@@ -260,26 +229,24 @@ function moonPhaseInfo(date){
 }
 
 /** =========================
- *  Resh times (ROBUST)
- *  Sunrise / Solar noon / Sunset / Next local midnight
+ *  Resh times (robust)
  *  ========================= */
 function reshTimesForLocalDate(lat, lon, dateLocal) {
   const y = dateLocal.getFullYear();
   const m = dateLocal.getMonth();
   const d = dateLocal.getDate();
 
-  // Anchor i UTC minskar datumgränsstrul vid sommartid etc.
   const anchorUTC = new Date(Date.UTC(y, m, d, 12, 0, 0));
   const observer = new Astronomy.Observer(lat, lon, 0);
 
-  // duration=2 dygn ger lite slack
-  const riseT = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, anchorUTC, 2);
-  const setT  = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, -1, anchorUTC, 2);
-  const noonT = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, anchorUTC, 2);
+  // större fönster så vi alltid hittar händelser även om ankaret hamnar “fel”
+  const riseT = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, anchorUTC, 5);
+  const setT  = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, -1, anchorUTC, 5);
+  const noonT = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, anchorUTC, 5);
 
-  const sunrise = riseT?.date ?? null;
-  const sunset  = setT?.date ?? null;
-  const noon    = noonT?.date ?? null;
+  const sunrise = toDate(riseT);
+  const sunset  = toDate(setT);
+  const noon    = toDate(noonT);
 
   const midnightLocal = new Date(y, m, d, 0, 0, 0);
   const nextMidnight = new Date(midnightLocal.getTime() + 24 * 3600 * 1000);
@@ -293,7 +260,7 @@ function reshTimesForLocalDate(lat, lon, dateLocal) {
 const state = {
   lang: localStorage.getItem("lang") || "sv",
   useGeo: localStorage.getItem("useGeo") === "1",
-  coords: null, // {lat, lon}
+  coords: null,
   stockholm: { lat: 59.3293, lon: 18.0686 },
 };
 
@@ -339,59 +306,47 @@ function formatCountdown(ms){
 function computeAndRender(now = new Date()){
   const t = I18N[state.lang] || I18N.sv;
 
-  // Title: weekday latin
   const weekday = weekdayLatin[now.getDay()];
   setText("title", t.title(weekday));
 
-  // Sun / Moon positions
   const sun = Astronomy.SunPosition(now);
   const moon = Astronomy.EclipticGeoMoon(now);
 
   const sunFmt = formatLonAsSign(sun.elon);
   const moonFmt = formatLonAsSign(moon.lon);
 
-  // Thelemic year
   const ty = thelemicYearFor(now);
   const anno = `Anno ${roman(ty.docosade)}:${roman(ty.within, false)}`;
   const tarot = `${t.tarot}: ${tarotFor(ty.docosade, ty.within, state.lang)}`;
 
-  // Date + era
   const normalDate = `${formatDateLongLocal(now, state.lang)} ${t.era}`;
 
-  // Moon phase/age
   const mp = moonPhaseInfo(now);
   const pct = Math.round(mp.frac * 100);
   const phaseName = t.moonPhase[mp.key] || mp.key;
   const moonAge = Math.round(mp.age * 10) / 10;
 
-  // Location: Stockholm or Geo
   const use = state.useGeo && state.coords ? state.coords : state.stockholm;
   const placeLabel = state.useGeo && state.coords ? t.placeLocal : t.placeStockholm;
 
-  // Resh times for local date
   let resh = { sunrise: null, noon: null, sunset: null, midnight: null };
   try{
     resh = reshTimesForLocalDate(use.lat, use.lon, now);
   }catch{
-    // ignore; will show dashes
+    // om något skulle kasta: visa dashes men krasch inte UI
   }
 
-  const sunriseOk = resh.sunrise && isValidDate(resh.sunrise);
-  const sunsetOk  = resh.sunset && isValidDate(resh.sunset);
-  const noonOk    = resh.noon && isValidDate(resh.noon);
-  const midnightOk= resh.midnight && isValidDate(resh.midnight);
+  const sunrise = isValidDate(resh.sunrise) ? resh.sunrise : null;
+  const noonD   = isValidDate(resh.noon) ? resh.noon : null;
+  const sunset  = isValidDate(resh.sunset) ? resh.sunset : null;
+  const midD    = isValidDate(resh.midnight) ? resh.midnight : null;
 
-  const sunrise = sunriseOk ? resh.sunrise : null;
-  const sunset  = sunsetOk ? resh.sunset : null;
-  const noonD   = noonOk ? resh.noon : null;
-  const midD    = midnightOk ? resh.midnight : null;
-
-  // Next Resh event from now among these four
+  // Next Resh
   const candidates = [
-    { key:"sunrise",  icon:"🌅", label:t.sunrise,  when:sunrise },
-    { key:"noon",     icon:"☀️", label:t.noon,     when:noonD },
-    { key:"sunset",   icon:"🌇", label:t.sunset,   when:sunset },
-    { key:"midnight", icon:"🌌", label:t.midnight, when:midD },
+    { icon:"🌅", label:t.sunrise,  when:sunrise },
+    { icon:"☀️", label:t.noon,     when:noonD },
+    { icon:"🌇", label:t.sunset,   when:sunset },
+    { icon:"🌌", label:t.midnight, when:midD },
   ].filter(x => x.when && isValidDate(x.when));
 
   let next = null;
@@ -401,16 +356,16 @@ function computeAndRender(now = new Date()){
     }
   }
 
-  // If none are future, compute tomorrow and pick earliest
+  // Om allt ligger i det förflutna: beräkna imorgon och ta första
   if (!next){
     const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, now.getHours(), now.getMinutes(), now.getSeconds());
     try{
       const r2 = reshTimesForLocalDate(use.lat, use.lon, tomorrow);
       const cand2 = [
-        { key:"sunrise",  icon:"🌅", label:t.sunrise,  when:r2.sunrise },
-        { key:"noon",     icon:"☀️", label:t.noon,     when:r2.noon },
-        { key:"sunset",   icon:"🌇", label:t.sunset,   when:r2.sunset },
-        { key:"midnight", icon:"🌌", label:t.midnight, when:r2.midnight },
+        { icon:"🌅", label:t.sunrise,  when:r2.sunrise },
+        { icon:"☀️", label:t.noon,     when:r2.noon },
+        { icon:"🌇", label:t.sunset,   when:r2.sunset },
+        { icon:"🌌", label:t.midnight, when:r2.midnight },
       ].filter(x => x.when && isValidDate(x.when));
       cand2.sort((a,b)=>a.when-b.when);
       next = cand2[0] || null;
@@ -419,7 +374,6 @@ function computeAndRender(now = new Date()){
     }
   }
 
-  // Render main panel
   setHTML("mainPanel", `
     <div>☉ ${t.sun} in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
     <div>☾ ${t.moon} in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
@@ -432,7 +386,6 @@ function computeAndRender(now = new Date()){
     <div class="moonSub">${t.moonAge}: ${moonAge} ${t.days}</div>
   `);
 
-  // Resh title + list
   setText("reshTitle", t.reshTitle(placeLabel));
 
   const rows = [
@@ -449,7 +402,6 @@ function computeAndRender(now = new Date()){
   }
   renderReshGrid(rows);
 
-  // Countdown
   if (next){
     const ms = next.when.getTime() - now.getTime();
     setText("countdown", `${t.nextResh}: ${next.icon} ${next.label} ${t.inLabel} ${formatCountdown(ms)}`);
@@ -457,7 +409,6 @@ function computeAndRender(now = new Date()){
     setText("countdown", "");
   }
 
-  // Next equinox (upcoming, rounded ~±2h) shown local time
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
@@ -472,7 +423,7 @@ function computeAndRender(now = new Date()){
 }
 
 /** =========================
- *  Geolocation + buttons
+ *  Geo + buttons
  *  ========================= */
 function tryEnableGeo(){
   const t = I18N[state.lang] || I18N.sv;
@@ -488,10 +439,7 @@ function tryEnableGeo(){
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      state.coords = {
-        lat: pos.coords.latitude,
-        lon: pos.coords.longitude,
-      };
+      state.coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
       state.useGeo = true;
       localStorage.setItem("useGeo", "1");
       computeAndRender(new Date());
