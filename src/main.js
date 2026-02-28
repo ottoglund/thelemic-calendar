@@ -1,7 +1,7 @@
 import * as Astronomy from "astronomy-engine";
 
 /** =========================
- *  I18N
+ *  Språk/texter
  *  ========================= */
 const I18N = {
   sv: {
@@ -16,12 +16,13 @@ const I18N = {
     sunset: "Solnedgång",
     midnight: "Midnatt",
     nextResh: "Nästa Resh",
-    inLabel: "om",
     equinoxNext: "Nästa vårdagjämning ~±2h (lokal tid)",
     tarot: "Tarot",
     placeStockholm: "Stockholm",
     placeLocal: "Lokal plats",
     cantGeo: "Kunde inte hämta plats (använder Stockholm).",
+    usingStockholm: "Använder Stockholm.",
+    usingLocal: "Använder lokal plats.",
     langSwedish: "Svenska",
     langEnglish: "English",
     era: "E.V.",
@@ -48,12 +49,13 @@ const I18N = {
     sunset: "Sunset",
     midnight: "Midnight",
     nextResh: "Next Resh",
-    inLabel: "in",
     equinoxNext: "Next Vernal Equinox ~±2h (local time)",
     tarot: "Tarot",
     placeStockholm: "Stockholm",
     placeLocal: "Local",
     cantGeo: "Could not get location (using Stockholm).",
+    usingStockholm: "Using Stockholm.",
+    usingLocal: "Using local location.",
     langSwedish: "Svenska",
     langEnglish: "English",
     era: "E.V.",
@@ -70,6 +72,7 @@ const I18N = {
   }
 };
 
+// Veckodag på latin
 const weekdayLatin = [
   "Dies Solis",
   "Dies Lunae",
@@ -80,6 +83,7 @@ const weekdayLatin = [
   "Dies Saturnii",
 ];
 
+// Zodiak-tecken (latin genitiv)
 const signLatinGen = [
   "Arietis", "Tauri", "Geminorum", "Cancri", "Leonis", "Virginis",
   "Librae", "Scorpii", "Sagittarii", "Capricorni", "Aquarii", "Piscium",
@@ -129,8 +133,15 @@ function toDate(x){
   return null;
 }
 
+/** Midpoint between two Dates (ms midpoint) */
+function midpointDate(a, b){
+  if (!isValidDate(a) || !isValidDate(b)) return null;
+  return new Date((a.getTime() + b.getTime()) / 2);
+}
+
 /** =========================
  *  Thelemic Year (Docosade:within)
+ *  New Year at Vernal Equinox (UTC calc, displayed in local time)
  *  ========================= */
 function vernalEquinoxUTC(year) {
   let a = new Date(Date.UTC(year, 2, 19, 0, 0, 0));
@@ -179,35 +190,18 @@ function roman(n, upper = true) {
 }
 
 /** =========================
- *  Tarot (Thoth titles)
+ *  Tarot mapping (placeholder)
  *  ========================= */
-const TRUMPS = {
-  sv: [
-    "Narren","Magikern","Översteprästinnan","Kejsarinnan","Kejsaren","Hierofanten",
-    "De Älskande","Vagnen","Justering","Eremiten","Lyckohjulet","Lustan",
-    "Den Hängde","Döden","Konsten","Djävulen","Tornet","Stjärnan",
-    "Månen","Solen","Eonen","Universum"
-  ],
-  en: [
-    "The Fool","The Magus","The Priestess","The Empress","The Emperor","The Hierophant",
-    "The Lovers","The Chariot","Adjustment","The Hermit","Fortune","Lust",
-    "The Hanged Man","Death","Art","The Devil","The Tower","The Star",
-    "The Moon","The Sun","The Aeon","The Universe"
-  ]
-};
-
 function tarotFor(docosade, within, lang){
-  const L = (lang === "sv") ? "sv" : "en";
-  const inner = TRUMPS[L][clamp(within, 0, 21)] ?? String(within);
-  const outer = TRUMPS[L][clamp(docosade, 0, 21)] ?? String(docosade);
-  return (L === "sv") ? `${inner} i ${outer}` : `${inner} in ${outer}`;
+  if (lang === "sv") return "Lustan i Hierofanten";
+  return "Lust in the Hierophant";
 }
 
 /** =========================
  *  Moon phase/age
  *  ========================= */
 function moonPhaseInfo(date){
-  const elong = Astronomy.MoonPhase(date);
+  const elong = Astronomy.MoonPhase(date); // degrees
   const phaseAngle = mod360(elong);
 
   const frac = (1 - Math.cos((phaseAngle * Math.PI) / 180)) / 2;
@@ -227,7 +221,7 @@ function moonPhaseInfo(date){
 }
 
 /** =========================
- *  Resh times (robust + fallback)
+ *  Resh times (robust rise/set, noon midpoint)
  *  ========================= */
 function searchRiseSetRobust(body, observer, direction, startDate, limitDays) {
   // 1) Try SearchRiseSet
@@ -235,12 +229,11 @@ function searchRiseSetRobust(body, observer, direction, startDate, limitDays) {
     const rs = Astronomy.SearchRiseSet(body, observer, direction, startDate, limitDays);
     const d1 = toDate(rs);
     if (isValidDate(d1)) return d1;
-  } catch (e) {
-    // ignore, fallback below
+  } catch {
+    // fallback below
   }
 
   // 2) Fallback: SearchAltitude at apparent sunrise/sunset altitude (~ -0.833° for Sun)
-  // If SearchAltitude doesn't exist in your build, this will throw and we'll bubble up.
   const ALT = -0.833;
   const alt = Astronomy.SearchAltitude(body, observer, direction, startDate, limitDays, ALT);
   const d2 = toDate(alt);
@@ -256,15 +249,19 @@ function reshTimesFor(lat, lon) {
   const sunrise = searchRiseSetRobust(Astronomy.Body.Sun, observer, +1, now, 5);
   const sunset  = searchRiseSetRobust(Astronomy.Body.Sun, observer, -1, now, 5);
 
-  let noon = null;
-  try {
-    const tr = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, now, 5);
-    noon = toDate(tr);
-  } catch {
-    noon = null;
+  // ✅ NOON = exact midpoint between sunrise and sunset
+  // If either is missing, fall back to transit (if available)
+  let noon = midpointDate(sunrise, sunset);
+  if (!isValidDate(noon)) {
+    try {
+      const tr = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, now, 5);
+      noon = toDate(tr);
+    } catch {
+      noon = null;
+    }
   }
 
-  // Next local midnight
+  // Next local midnight boundary (00:00)
   const y = now.getFullYear();
   const m = now.getMonth();
   const d = now.getDate();
@@ -284,7 +281,6 @@ const state = {
   useGeo: localStorage.getItem("useGeo") === "1",
   coords: null,
   stockholm: { lat: 59.3293, lon: 18.0686 },
-  reshError: "", // shown in footer if something is wrong
 };
 
 /** =========================
@@ -327,40 +323,33 @@ function formatCountdown(ms){
 function computeAndRender(now = new Date()){
   const t = I18N[state.lang] || I18N.sv;
 
-  setText("title", t.title(weekdayLatin[now.getDay()]));
+  const weekday = weekdayLatin[now.getDay()];
+  setText("title", t.title(weekday));
 
-  // Sun / Moon positions
   const sun = Astronomy.SunPosition(now);
   const moon = Astronomy.EclipticGeoMoon(now);
+
   const sunFmt = formatLonAsSign(sun.elon);
   const moonFmt = formatLonAsSign(moon.lon);
 
-  // Thelemic year
   const ty = thelemicYearFor(now);
   const anno = `Anno ${roman(ty.docosade)}:${roman(ty.within, false)}`;
   const tarot = `${t.tarot}: ${tarotFor(ty.docosade, ty.within, state.lang)}`;
-
-  // Date + era
   const normalDate = `${formatDateLongLocal(now, state.lang)} ${t.era}`;
 
-  // Moon
   const mp = moonPhaseInfo(now);
   const pct = Math.round(mp.frac * 100);
   const phaseName = t.moonPhase[mp.key] || mp.key;
   const moonAge = Math.round(mp.age * 10) / 10;
 
-  // Location
   const use = state.useGeo && state.coords ? state.coords : state.stockholm;
   const placeLabel = state.useGeo && state.coords ? t.placeLocal : t.placeStockholm;
 
-  // Resh times
-  state.reshError = "";
   let resh = { sunrise: null, noon: null, sunset: null, midnight: null };
   try{
     resh = reshTimesFor(use.lat, use.lon);
-  }catch (e){
-    state.reshError = String(e?.message || e);
-    console.error("Resh calculation error:", e);
+  }catch{
+    // ignore
   }
 
   const sunrise = isValidDate(resh.sunrise) ? resh.sunrise : null;
@@ -368,12 +357,11 @@ function computeAndRender(now = new Date()){
   const sunset  = isValidDate(resh.sunset) ? resh.sunset : null;
   const midD    = isValidDate(resh.midnight) ? resh.midnight : null;
 
-  // Next Resh
   const candidates = [
-    { icon:"🌅", label:t.sunrise,  when:sunrise },
-    { icon:"☀️", label:t.noon,     when:noonD },
-    { icon:"🌇", label:t.sunset,   when:sunset },
-    { icon:"🌌", label:t.midnight, when:midD },
+    { key:"sunrise",  icon:"🌅", label:t.sunrise,  when:sunrise },
+    { key:"noon",     icon:"☀️", label:t.noon,     when:noonD },
+    { key:"sunset",   icon:"🌇", label:t.sunset,   when:sunset },
+    { key:"midnight", icon:"🌌", label:t.midnight, when:midD },
   ].filter(x => x.when && isValidDate(x.when));
 
   let next = null;
@@ -412,12 +400,12 @@ function computeAndRender(now = new Date()){
   renderReshGrid(rows);
 
   if (next){
-    setText("countdown", `${t.nextResh}: ${next.icon} ${next.label} ${t.inLabel} ${formatCountdown(next.when.getTime() - now.getTime())}`);
+    const ms = next.when.getTime() - now.getTime();
+    setText("countdown", `${t.nextResh}: ${next.icon} ${next.label} om ${formatCountdown(ms)}`);
   }else{
     setText("countdown", "");
   }
 
-  // Next equinox
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
@@ -425,14 +413,13 @@ function computeAndRender(now = new Date()){
   const twoH = 2 * 60 * 60 * 1000;
   const eqRounded = new Date(Math.round(eqNext.getTime() / twoH) * twoH);
 
-  // Footer: show equinox + any Resh error
-  const footerBase = `${t.equinoxNext}: ${eqRounded.getFullYear()}-${pad2(eqRounded.getMonth()+1)}-${pad2(eqRounded.getDate())} ${pad2(eqRounded.getHours())}:${pad2(eqRounded.getMinutes())}`;
-  const footer = state.reshError ? `${footerBase} — Resh error: ${state.reshError}` : footerBase;
-  setText("footerPanel", footer);
+  setText("footerPanel",
+    `${t.equinoxNext}: ${eqRounded.getFullYear()}-${pad2(eqRounded.getMonth()+1)}-${pad2(eqRounded.getDate())} ${pad2(eqRounded.getHours())}:${pad2(eqRounded.getMinutes())}`
+  );
 }
 
 /** =========================
- *  Geo + buttons
+ *  Geolocation + buttons
  *  ========================= */
 function tryEnableGeo(){
   const t = I18N[state.lang] || I18N.sv;
@@ -448,7 +435,10 @@ function tryEnableGeo(){
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      state.coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      state.coords = {
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+      };
       state.useGeo = true;
       localStorage.setItem("useGeo", "1");
       computeAndRender(new Date());
@@ -492,7 +482,9 @@ function boot(){
   if (langBtn) langBtn.addEventListener("click", toggleLang);
   if (resetBtn) resetBtn.addEventListener("click", setStockholm);
 
-  if (state.useGeo) tryEnableGeo();
+  if (state.useGeo) {
+    tryEnableGeo();
+  }
 
   computeAndRender(new Date());
   setInterval(() => computeAndRender(new Date()), 1000);
