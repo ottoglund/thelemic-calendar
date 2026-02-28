@@ -1,32 +1,22 @@
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-import { readFileSync } from "node:fs";
-
-const pkg = JSON.parse(
-  readFileSync(new URL("./package.json", import.meta.url), "utf-8")
-);
 
 export default defineConfig({
-  // GitHub Pages project site:
   base: "/thelemic-calendar/",
-
-  define: {
-    __APP_VERSION__: JSON.stringify(pkg.version),
-    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
-  },
 
   plugins: [
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "auto",
 
+      // Se till att SW-navigering alltid faller tillbaka till rätt index under subpath
       workbox: {
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        navigateFallback: "/thelemic-calendar/index.html",
       },
 
-      // Viktigt: låt ikonerna vara RELATIVA så base hanteras korrekt.
       manifest: {
         name: "Thelemic Calendar",
         short_name: "Thelema",
@@ -36,11 +26,12 @@ export default defineConfig({
         theme_color: "#000000",
         background_color: "#000000",
 
+        // RELATIVA paths (viktigt) – då hamnar de under base
         icons: [
           { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" }
-        ]
-      }
-    })
-  ]
+          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
+        ],
+      },
+    }),
+  ],
 });
