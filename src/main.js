@@ -117,15 +117,11 @@ function formatDateLongLocal(date, lang){
 function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 function isValidDate(d){ return d instanceof Date && !isNaN(d.getTime()); }
 
-/**
- * Normaliserar Astronomy Engine returtyper:
- * - Ibland får man AstroTime (med .date)
- * - Ibland Date direkt
- */
+/** Normalize Astronomy-Engine return types */
 function toDate(x){
   if (!x) return null;
   if (x instanceof Date) return x;
-  if (x.date instanceof Date) return x.date;
+  if (x.date instanceof Date) return x.date;      // AstroTime.date
   if (typeof x.ToDate === "function") {
     const d = x.ToDate();
     return d instanceof Date ? d : null;
@@ -135,7 +131,6 @@ function toDate(x){
 
 /** =========================
  *  Thelemic Year (Docosade:within)
- *  New Year at Vernal Equinox (UTC calc)
  *  ========================= */
 function vernalEquinoxUTC(year) {
   let a = new Date(Date.UTC(year, 2, 19, 0, 0, 0));
@@ -184,7 +179,7 @@ function roman(n, upper = true) {
 }
 
 /** =========================
- *  Tarot mapping (Thoth titles)
+ *  Tarot (Thoth titles)
  *  ========================= */
 const TRUMPS = {
   sv: [
@@ -209,7 +204,7 @@ function tarotFor(docosade, within, lang){
 }
 
 /** =========================
- *  Moon phase/age (approx)
+ *  Moon phase/age
  *  ========================= */
 function moonPhaseInfo(date){
   const elong = Astronomy.MoonPhase(date);
@@ -232,22 +227,44 @@ function moonPhaseInfo(date){
 }
 
 /** =========================
- *  Resh times (Search from NOW)
+ *  Resh times (robust + fallback)
  *  ========================= */
+function searchRiseSetRobust(body, observer, direction, startDate, limitDays) {
+  // 1) Try SearchRiseSet
+  try {
+    const rs = Astronomy.SearchRiseSet(body, observer, direction, startDate, limitDays);
+    const d1 = toDate(rs);
+    if (isValidDate(d1)) return d1;
+  } catch (e) {
+    // ignore, fallback below
+  }
+
+  // 2) Fallback: SearchAltitude at apparent sunrise/sunset altitude (~ -0.833° for Sun)
+  // If SearchAltitude doesn't exist in your build, this will throw and we'll bubble up.
+  const ALT = -0.833;
+  const alt = Astronomy.SearchAltitude(body, observer, direction, startDate, limitDays, ALT);
+  const d2 = toDate(alt);
+  if (isValidDate(d2)) return d2;
+
+  return null;
+}
+
 function reshTimesFor(lat, lon) {
   const observer = new Astronomy.Observer(lat, lon, 0);
   const now = new Date();
 
-  // Sök nästa händelser från NU
-  const riseT = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, now, 2);
-  const setT  = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, -1, now, 2);
-  const noonT = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, now, 2);
+  const sunrise = searchRiseSetRobust(Astronomy.Body.Sun, observer, +1, now, 5);
+  const sunset  = searchRiseSetRobust(Astronomy.Body.Sun, observer, -1, now, 5);
 
-  const sunrise = toDate(riseT);
-  const sunset  = toDate(setT);
-  const noon    = toDate(noonT);
+  let noon = null;
+  try {
+    const tr = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, now, 5);
+    noon = toDate(tr);
+  } catch {
+    noon = null;
+  }
 
-  // Nästa lokala midnatt
+  // Next local midnight
   const y = now.getFullYear();
   const m = now.getMonth();
   const d = now.getDate();
@@ -267,6 +284,7 @@ const state = {
   useGeo: localStorage.getItem("useGeo") === "1",
   coords: null,
   stockholm: { lat: 59.3293, lon: 18.0686 },
+  reshError: "", // shown in footer if something is wrong
 };
 
 /** =========================
@@ -309,7 +327,6 @@ function formatCountdown(ms){
 function computeAndRender(now = new Date()){
   const t = I18N[state.lang] || I18N.sv;
 
-  // Title
   setText("title", t.title(weekdayLatin[now.getDay()]));
 
   // Sun / Moon positions
@@ -326,7 +343,7 @@ function computeAndRender(now = new Date()){
   // Date + era
   const normalDate = `${formatDateLongLocal(now, state.lang)} ${t.era}`;
 
-  // Moon phase/age
+  // Moon
   const mp = moonPhaseInfo(now);
   const pct = Math.round(mp.frac * 100);
   const phaseName = t.moonPhase[mp.key] || mp.key;
@@ -336,12 +353,14 @@ function computeAndRender(now = new Date()){
   const use = state.useGeo && state.coords ? state.coords : state.stockholm;
   const placeLabel = state.useGeo && state.coords ? t.placeLocal : t.placeStockholm;
 
-  // Resh times (from NOW)
+  // Resh times
+  state.reshError = "";
   let resh = { sunrise: null, noon: null, sunset: null, midnight: null };
   try{
     resh = reshTimesFor(use.lat, use.lon);
-  }catch{
-    // ignore
+  }catch (e){
+    state.reshError = String(e?.message || e);
+    console.error("Resh calculation error:", e);
   }
 
   const sunrise = isValidDate(resh.sunrise) ? resh.sunrise : null;
@@ -349,7 +368,7 @@ function computeAndRender(now = new Date()){
   const sunset  = isValidDate(resh.sunset) ? resh.sunset : null;
   const midD    = isValidDate(resh.midnight) ? resh.midnight : null;
 
-  // Next Resh among these four
+  // Next Resh
   const candidates = [
     { icon:"🌅", label:t.sunrise,  when:sunrise },
     { icon:"☀️", label:t.noon,     when:noonD },
@@ -364,7 +383,6 @@ function computeAndRender(now = new Date()){
     }
   }
 
-  // Render main panel
   setHTML("mainPanel", `
     <div>☉ ${t.sun} in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
     <div>☾ ${t.moon} in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
@@ -377,7 +395,6 @@ function computeAndRender(now = new Date()){
     <div class="moonSub">${t.moonAge}: ${moonAge} ${t.days}</div>
   `);
 
-  // Resh title + list
   setText("reshTitle", t.reshTitle(placeLabel));
 
   const rows = [
@@ -394,7 +411,6 @@ function computeAndRender(now = new Date()){
   }
   renderReshGrid(rows);
 
-  // Countdown
   if (next){
     setText("countdown", `${t.nextResh}: ${next.icon} ${next.label} ${t.inLabel} ${formatCountdown(next.when.getTime() - now.getTime())}`);
   }else{
@@ -409,14 +425,14 @@ function computeAndRender(now = new Date()){
   const twoH = 2 * 60 * 60 * 1000;
   const eqRounded = new Date(Math.round(eqNext.getTime() / twoH) * twoH);
 
-  setText(
-    "footerPanel",
-    `${t.equinoxNext}: ${eqRounded.getFullYear()}-${pad2(eqRounded.getMonth()+1)}-${pad2(eqRounded.getDate())} ${pad2(eqRounded.getHours())}:${pad2(eqRounded.getMinutes())}`
-  );
+  // Footer: show equinox + any Resh error
+  const footerBase = `${t.equinoxNext}: ${eqRounded.getFullYear()}-${pad2(eqRounded.getMonth()+1)}-${pad2(eqRounded.getDate())} ${pad2(eqRounded.getHours())}:${pad2(eqRounded.getMinutes())}`;
+  const footer = state.reshError ? `${footerBase} — Resh error: ${state.reshError}` : footerBase;
+  setText("footerPanel", footer);
 }
 
 /** =========================
- *  Geolocation + buttons
+ *  Geo + buttons
  *  ========================= */
 function tryEnableGeo(){
   const t = I18N[state.lang] || I18N.sv;
