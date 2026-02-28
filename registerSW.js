@@ -1,1 +1,0 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/thelemic-calendar/sw.js', { scope: '/thelemic-calendar/' })})}
