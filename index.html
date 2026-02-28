@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Thelemic Date</title>
 
-  <!-- PWA (GitHub Pages subpath: /thelemic-calendar/) -->
-  <link rel="manifest" href="/thelemic-calendar/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/thelemic-calendar/icons/apple-touch-icon.png">
+  <!-- PWA (låter Vite lösa base-path) -->
+  <link rel="manifest" href="%BASE_URL%manifest.webmanifest">
+  <link rel="apple-touch-icon" href="%BASE_URL%icons/apple-touch-icon.png">
   <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
@@ -19,7 +20,6 @@
       --panel2: rgba(0,0,0,0.30);
       --txt: rgba(212,175,55,0.95);
     }
-
     html, body { height: 100%; }
     body{
       margin:0;
@@ -37,7 +37,6 @@
       justify-content:center;
       align-items:flex-start;
     }
-
     .card{
       width:min(860px, 100%);
       background: var(--panel);
@@ -47,12 +46,10 @@
       box-shadow: 0 18px 60px rgba(212,175,55,0.12);
       overflow: hidden;
       position: relative;
-
       max-height: calc(100svh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
       display:flex;
       flex-direction:column;
     }
-
     .card::before{
       content:"";
       position:absolute;
@@ -76,7 +73,6 @@
       15%  { opacity:0.75; }
       100% { opacity:0; transform: translateX(70%) rotate(8deg); }
     }
-
     .topbar{
       position: sticky;
       top: 0;
@@ -89,7 +85,6 @@
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(212,175,55,0.12);
     }
-
     .iconBtn{
       width: 40px;
       height: 40px;
@@ -106,26 +101,22 @@
     }
     .iconBtn:active{ transform: translateY(1px); }
     .iconBtn:hover{ border-color: rgba(212,175,55,0.55); box-shadow: 0 0 16px rgba(212,175,55,0.12); }
-
     .content{
       padding: 10px 16px 16px;
       overflow:auto;
       -webkit-overflow-scrolling: touch;
     }
-
     .title{
       text-align:center;
       font-size: 44px;
       margin: 6px 0 10px;
       letter-spacing: 0.4px;
     }
-
     .main{
       text-align:center;
       line-height: 1.42;
       font-size: 22px;
     }
-
     .anno{
       margin-top: 10px;
       font-size: 36px;
@@ -142,24 +133,14 @@
       font-size: 18px;
       opacity: 0.92;
     }
-
-    .moon{
-      margin-top: 14px;
-      font-size: 18px;
-    }
-    .moonSub{
-      margin-top: 2px;
-      font-size: 17px;
-      opacity: 0.9;
-    }
-
+    .moon{ margin-top: 14px; font-size: 18px; }
+    .moonSub{ margin-top: 2px; font-size: 17px; opacity: 0.9; }
     .sectionTitle{
       margin-top: 16px;
       text-align:center;
       font-size: 18px;
       opacity: 0.88;
     }
-
     .reshGrid{
       margin-top: 10px;
       display:grid;
@@ -184,19 +165,8 @@
       border-color: rgba(212,175,55,0.42);
       box-shadow: 0 0 22px rgba(212,175,55,0.10);
     }
-
-    .countdown{
-      margin-top: 12px;
-      text-align:center;
-      font-size: 18px;
-      opacity: 0.95;
-    }
-    .footer{
-      margin-top: 14px;
-      text-align:center;
-      font-size: 15px;
-      opacity: 0.82;
-    }
+    .countdown{ margin-top: 12px; text-align:center; font-size: 18px; opacity: 0.95; }
+    .footer{ margin-top: 14px; text-align:center; font-size: 15px; opacity: 0.82; }
 
     @media (max-width: 450px){
       .title{font-size: 40px;}
@@ -231,7 +201,6 @@
     </div>
   </div>
 
-  <!-- Viktigt: låt Vite skriva rätt asset-path vid build -->
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
