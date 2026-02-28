@@ -16,6 +16,7 @@ const I18N = {
     sunset: "Solnedgång",
     midnight: "Midnatt",
     nextResh: "Nästa Resh",
+    inLabel: "om",
     equinoxNext: "Nästa vårdagjämning ~±2h (lokal tid)",
     tarot: "Tarot",
     placeStockholm: "Stockholm",
@@ -49,6 +50,7 @@ const I18N = {
     sunset: "Sunset",
     midnight: "Midnight",
     nextResh: "Next Resh",
+    inLabel: "in",
     equinoxNext: "Next Vernal Equinox ~±2h (local time)",
     tarot: "Tarot",
     placeStockholm: "Stockholm",
@@ -112,7 +114,6 @@ function formatTimeLocal(date){
   return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
 function formatDateLongLocal(date, lang){
-  // sv: "27 februari 2026", en: "27 February 2026"
   return date.toLocaleDateString(lang === "sv" ? "sv-SE" : "en-GB", {
     day: "2-digit",
     month: "long",
@@ -172,34 +173,77 @@ function roman(n, upper = true) {
 }
 
 /** =========================
- *  Tarot mapping (minimal)
- *  We keep your current example: V:xi => Lustan i Hierofanten
- *  (You can expand later.)
+ *  Tarot mapping (Thoth titles)
+ *  docosade = outer trump ("... i ...")
+ *  within   = inner trump
  *  ========================= */
+const TRUMPS = {
+  sv: [
+    "Narren",
+    "Magikern",
+    "Översteprästinnan",
+    "Kejsarinnan",
+    "Kejsaren",
+    "Hierofanten",
+    "De Älskande",
+    "Vagnen",
+    "Justering",
+    "Eremiten",
+    "Lyckohjulet",
+    "Lustan",
+    "Den Hängde",
+    "Döden",
+    "Konsten",
+    "Djävulen",
+    "Tornet",
+    "Stjärnan",
+    "Månen",
+    "Solen",
+    "Eonen",
+    "Universum"
+  ],
+  en: [
+    "The Fool",
+    "The Magus",
+    "The Priestess",
+    "The Empress",
+    "The Emperor",
+    "The Hierophant",
+    "The Lovers",
+    "The Chariot",
+    "Adjustment",
+    "The Hermit",
+    "Fortune",
+    "Lust",
+    "The Hanged Man",
+    "Death",
+    "Art",
+    "The Devil",
+    "The Tower",
+    "The Star",
+    "The Moon",
+    "The Sun",
+    "The Aeon",
+    "The Universe"
+  ]
+};
+
 function tarotFor(docosade, within, lang){
-  // For now: show the same phrase you wanted.
-  // Expand mapping later if you want a full table.
-  if (lang === "sv") return "Lustan i Hierofanten";
-  return "Lust in the Hierophant";
+  const L = (lang === "sv") ? "sv" : "en";
+  const inner = TRUMPS[L][clamp(within, 0, 21)] ?? String(within);
+  const outer = TRUMPS[L][clamp(docosade, 0, 21)] ?? String(docosade);
+  return (L === "sv") ? `${inner} i ${outer}` : `${inner} in ${outer}`;
 }
 
 /** =========================
  *  Moon phase/age (approx via elongation)
- *  We use Astronomy.MoonPhase which returns elongation angle [0..360)
- *  and map it to a phase name + illuminated fraction approximation.
  *  ========================= */
 function moonPhaseInfo(date){
-  // MoonPhase returns elongation degrees: 0=new, 180=full
   const elong = Astronomy.MoonPhase(date); // degrees
   const phaseAngle = mod360(elong);
-
-  // illuminated fraction approx: (1 - cos(elong))/2, elong in radians
   const frac = (1 - Math.cos((phaseAngle * Math.PI) / 180)) / 2;
-
-  // moon age in days approx from elongation (synodic month ~29.53059)
   const age = (phaseAngle / 360) * 29.53059;
 
-  // Determine phase bucket
   let key = "new";
   if (phaseAngle < 22.5 || phaseAngle >= 337.5) key = "new";
   else if (phaseAngle < 67.5) key = "waxingCrescent";
@@ -215,31 +259,20 @@ function moonPhaseInfo(date){
 
 /** =========================
  *  Resh times (local date, for given lat/lon)
- *  Sunrise / Solar noon / Sunset / Midnight (00:00 local)
  *  ========================= */
 function reshTimesForLocalDate(lat, lon, dateLocal) {
-  // dateLocal: a Date whose Y/M/D we use in LOCAL time
   const y = dateLocal.getFullYear();
   const m = dateLocal.getMonth() + 1;
   const d = dateLocal.getDate();
 
-  // Use noon local as anchor to get same calendar date in Astronomy.
   const anchor = new Date(y, m - 1, d, 12, 0, 0);
-
-  // Astronomy expects coordinates; Time is in UTC internally via JS Date.
   const observer = new Astronomy.Observer(lat, lon, 0);
 
-  // Sunrise/Sunset on that local date (we accept that it’s close enough for our use)
   const sunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, anchor, 1);
   const sunset  = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, -1, anchor, 1);
+  const noon    = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, anchor, 1);
 
-  // Solar noon: find time Sun crosses local meridian (transit)
-  const noon = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, anchor, 1);
-
-  // Midnight: next local midnight boundary (00:00 of next day?) — we want upcoming midnight within same cycle
-  // For Resh display, we show "Midnatt" as 00:00 local next occurrence.
   const midnight = new Date(y, m - 1, d, 0, 0, 0);
-  // If it's already past midnight (always true later in day), show next midnight:
   const nextMidnight = new Date(midnight.getTime() + 24 * 3600 * 1000);
 
   return { sunrise, noon: noon.date, sunset, midnight: nextMidnight };
@@ -253,7 +286,7 @@ function isValidDate(d){ return d instanceof Date && !isNaN(d.getTime()); }
 const state = {
   lang: localStorage.getItem("lang") || "sv",
   useGeo: localStorage.getItem("useGeo") === "1",
-  coords: null, // {lat, lon}
+  coords: null,
   placeLabel: "Stockholm",
   stockholm: { lat: 59.3293, lon: 18.0686 },
 };
@@ -300,41 +333,34 @@ function formatCountdown(ms){
 function computeAndRender(now = new Date()){
   const t = I18N[state.lang] || I18N.sv;
 
-  // Title: weekday latin
   const weekday = weekdayLatin[now.getDay()];
   setText("title", t.title(weekday));
 
-  // Sun / Moon positions
   const sun = Astronomy.SunPosition(now);
   const moon = Astronomy.EclipticGeoMoon(now);
 
   const sunFmt = formatLonAsSign(sun.elon);
   const moonFmt = formatLonAsSign(moon.lon);
 
-  // Thelemic year
   const ty = thelemicYearFor(now);
   const anno = `Anno ${roman(ty.docosade)}:${roman(ty.within, false)}`;
   const tarot = `${t.tarot}: ${tarotFor(ty.docosade, ty.within, state.lang)}`;
 
-  // Date + era
   const normalDate = `${formatDateLongLocal(now, state.lang)} ${t.era}`;
 
-  // Moon phase/age
   const mp = moonPhaseInfo(now);
   const pct = Math.round(mp.frac * 100);
   const phaseName = t.moonPhase[mp.key] || mp.key;
   const moonAge = Math.round(mp.age * 10) / 10;
 
-  // Location: Stockholm or Geo
   const use = state.useGeo && state.coords ? state.coords : state.stockholm;
   const placeLabel = state.useGeo && state.coords ? t.placeLocal : t.placeStockholm;
 
-  // Resh times for local date
   let resh = { sunrise: null, noon: null, sunset: null, midnight: null };
   try{
     resh = reshTimesForLocalDate(use.lat, use.lon, now);
   }catch{
-    // ignore; will show dashes
+    // ignore
   }
 
   const sunriseOk = resh.sunrise && isValidDate(resh.sunrise.date);
@@ -347,37 +373,29 @@ function computeAndRender(now = new Date()){
   const noonD   = noonOk ? resh.noon : null;
   const midD    = midnightOk ? resh.midnight : null;
 
-  // Next Resh event from now among these four
   const candidates = [
-    { key:"sunrise",  icon:"🖼️", label:t.sunrise,  when:sunrise },
+    { key:"sunrise",  icon:"🌅", label:t.sunrise,  when:sunrise },
     { key:"noon",     icon:"☀️", label:t.noon,     when:noonD },
-    { key:"sunset",   icon:"🌆", label:t.sunset,   when:sunset },
+    { key:"sunset",   icon:"🌇", label:t.sunset,   when:sunset },
     { key:"midnight", icon:"🌌", label:t.midnight, when:midD },
   ].filter(x => x.when && isValidDate(x.when));
 
-  // Ensure we pick the next occurrence: if an event is earlier today, some Astron results may be in past.
-  // If sunrise/sunset returned in past for the anchor date, bump to next day by recalculating tomorrow.
-  // (Keeps it stable.)
   let next = null;
   for (const c of candidates){
     if (c.when.getTime() > now.getTime()){
       if (!next || c.when < next.when) next = c;
     }
   }
-  // If none are future, compute tomorrow and pick earliest (typically sunrise)
+
   if (!next){
     const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, now.getHours(), now.getMinutes(), now.getSeconds());
     try{
       const r2 = reshTimesForLocalDate(use.lat, use.lon, tomorrow);
-      const sunrise2 = r2.sunrise?.date;
-      const sunset2  = r2.sunset?.date;
-      const noon2    = r2.noon;
-      const mid2     = r2.midnight;
       const cand2 = [
-        { key:"sunrise",  icon:"🖼️", label:t.sunrise,  when:sunrise2 },
-        { key:"noon",     icon:"☀️", label:t.noon,     when:noon2 },
-        { key:"sunset",   icon:"🌆", label:t.sunset,   when:sunset2 },
-        { key:"midnight", icon:"🌌", label:t.midnight, when:mid2 },
+        { key:"sunrise",  icon:"🌅", label:t.sunrise,  when:r2.sunrise?.date },
+        { key:"noon",     icon:"☀️", label:t.noon,     when:r2.noon },
+        { key:"sunset",   icon:"🌇", label:t.sunset,   when:r2.sunset?.date },
+        { key:"midnight", icon:"🌌", label:t.midnight, when:r2.midnight },
       ].filter(x => x.when && isValidDate(x.when));
       cand2.sort((a,b)=>a.when-b.when);
       next = cand2[0] || null;
@@ -386,7 +404,6 @@ function computeAndRender(now = new Date()){
     }
   }
 
-  // Render main panel (App Store clean: tighter)
   setHTML("mainPanel", `
     <div>☉ ${t.sun} in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
     <div>☾ ${t.moon} in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
@@ -399,10 +416,8 @@ function computeAndRender(now = new Date()){
     <div class="moonSub">${t.moonAge}: ${moonAge} ${t.days}</div>
   `);
 
-  // Resh title + list
   setText("reshTitle", t.reshTitle(placeLabel));
 
-  // Use icons like your screenshot (image emojis)
   const rows = [
     { icon:"🌅", label:t.sunrise,  value: sunrise ? formatTimeLocal(sunrise) : "—" },
     { icon:"☀️", label:t.noon,     value: noonD ? formatTimeLocal(noonD) : "—" },
@@ -410,7 +425,6 @@ function computeAndRender(now = new Date()){
     { icon:"🌌", label:t.midnight, value: midD ? formatTimeLocal(midD) : "—" },
   ];
 
-  // mark next
   if (next){
     for (const r of rows){
       if (r.label === next.label) r.next = true;
@@ -418,24 +432,24 @@ function computeAndRender(now = new Date()){
   }
   renderReshGrid(rows);
 
-  // Countdown
   if (next){
     const ms = next.when.getTime() - now.getTime();
-    setText("countdown", `${t.nextResh}: ${next.icon} ${next.label} om ${formatCountdown(ms)}`);
+    setText("countdown", `${t.nextResh}: ${next.icon} ${next.label} ${t.inLabel} ${formatCountdown(ms)}`);
   }else{
     setText("countdown", "");
   }
 
-  // Next equinox (upcoming, rounded ~±2h) shown local time
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
 
-  // Round to nearest 2h
   const twoH = 2 * 60 * 60 * 1000;
   const eqRounded = new Date(Math.round(eqNext.getTime() / twoH) * twoH);
 
-  setText("footerPanel", `${t.equinoxNext}: ${eqRounded.getFullYear()}-${pad2(eqRounded.getMonth()+1)}-${pad2(eqRounded.getDate())} ${pad2(eqRounded.getHours())}:${pad2(eqRounded.getMinutes())}`);
+  setText(
+    "footerPanel",
+    `${t.equinoxNext}: ${eqRounded.getFullYear()}-${pad2(eqRounded.getMonth()+1)}-${pad2(eqRounded.getDate())} ${pad2(eqRounded.getHours())}:${pad2(eqRounded.getMinutes())}`
+  );
 }
 
 /** =========================
@@ -455,10 +469,7 @@ function tryEnableGeo(){
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      state.coords = {
-        lat: pos.coords.latitude,
-        lon: pos.coords.longitude,
-      };
+      state.coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
       state.useGeo = true;
       localStorage.setItem("useGeo", "1");
       computeAndRender(new Date());
@@ -491,11 +502,9 @@ function toggleLang(){
  *  Boot
  *  ========================= */
 function boot(){
-  // shimmer bara en gång per cold-start
   const card = document.getElementById("card");
   if (card) setTimeout(() => card.classList.remove("shimmer"), 1400);
 
-  // Buttons
   const geoBtn = document.getElementById("geoBtn");
   const langBtn = document.getElementById("langBtn");
   const resetBtn = document.getElementById("resetBtn");
@@ -504,15 +513,9 @@ function boot(){
   if (langBtn) langBtn.addEventListener("click", toggleLang);
   if (resetBtn) resetBtn.addEventListener("click", setStockholm);
 
-  // If user previously enabled geo, try again silently
-  if (state.useGeo) {
-    tryEnableGeo();
-  }
+  if (state.useGeo) tryEnableGeo();
 
-  // initial render
   computeAndRender(new Date());
-
-  // update “fast” panel every 1s (countdown + positions)
   setInterval(() => computeAndRender(new Date()), 1000);
 }
 

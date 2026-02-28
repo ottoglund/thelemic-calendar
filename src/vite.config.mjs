@@ -1,8 +1,18 @@
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { readFileSync } from "node:fs";
+
+const pkg = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf-8")
+);
 
 export default defineConfig({
   base: "/thelemic-calendar/",
+
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
 
   plugins: [
     VitePWA({
@@ -39,7 +49,7 @@ export default defineConfig({
             src: "/thelemic-calendar/icons/apple-touch-icon.png",
             sizes: "180x180",
             type: "image/png",
-          },
+          }
         ],
       },
     }),

@@ -5,18 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Thelemic Date</title>
 
-  <!-- PWA -->
-<link rel="manifest" href="/thelemic-calendar/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/thelemic-calendar/icons/apple-touch-icon.png">
-<meta name="theme-color" content="#000000" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <!-- PWA (GitHub Pages subpath: /thelemic-calendar/) -->
+  <link rel="manifest" href="/thelemic-calendar/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/thelemic-calendar/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
   <style>
     :root{
       --gold:#d4af37;
-      --goldSoft: rgba(212,175,55,0.28);
-      --stroke: rgba(212,175,55,0.18);
       --panel: rgba(0,0,0,0.50);
       --panel2: rgba(0,0,0,0.30);
       --txt: rgba(212,175,55,0.95);
@@ -55,7 +53,6 @@
       flex-direction:column;
     }
 
-    /* Diskret guldskimmer på start */
     .card::before{
       content:"";
       position:absolute;
@@ -80,7 +77,6 @@
       100% { opacity:0; transform: translateX(70%) rotate(8deg); }
     }
 
-    /* Sticky topbar så knappar alltid syns */
     .topbar{
       position: sticky;
       top: 0;
@@ -164,7 +160,6 @@
       opacity: 0.88;
     }
 
-    /* App Store clean: list-känsla */
     .reshGrid{
       margin-top: 10px;
       display:grid;
@@ -236,6 +231,7 @@
     </div>
   </div>
 
+  <!-- Viktigt: låt Vite skriva rätt asset-path vid build -->
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
