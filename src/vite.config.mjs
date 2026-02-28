@@ -7,6 +7,7 @@ const pkg = JSON.parse(
 );
 
 export default defineConfig({
+  // GitHub Pages project site:
   base: "/thelemic-calendar/",
 
   define: {
@@ -25,6 +26,7 @@ export default defineConfig({
         clientsClaim: true,
       },
 
+      // Viktigt: låt ikonerna vara RELATIVA så base hanteras korrekt.
       manifest: {
         name: "Thelemic Calendar",
         short_name: "Thelema",
@@ -35,23 +37,10 @@ export default defineConfig({
         background_color: "#000000",
 
         icons: [
-          {
-            src: "/thelemic-calendar/icons/icon-192.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "/thelemic-calendar/icons/icon-512.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
-          {
-            src: "/thelemic-calendar/icons/apple-touch-icon.png",
-            sizes: "180x180",
-            type: "image/png",
-          }
-        ],
-      },
-    }),
-  ],
+          { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" }
+        ]
+      }
+    })
+  ]
 });
