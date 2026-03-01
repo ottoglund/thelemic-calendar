@@ -1,4 +1,6 @@
+import "./style.css";
 import * as Astronomy from "astronomy-engine";
+import { registerSW } from "virtual:pwa-register";
 
 /** =========================
  *  Språk/texter
@@ -24,8 +26,6 @@ const I18N = {
     cantGeo: "Kunde inte hämta plats (använder Stockholm).",
     usingStockholm: "Använder Stockholm.",
     usingLocal: "Använder lokal plats.",
-    langSwedish: "Svenska",
-    langEnglish: "English",
     era: "E.V.",
     annoLegis: "Anno Legis",
     moonPhase: {
@@ -52,15 +52,13 @@ const I18N = {
     midnight: "Midnight",
     nextResh: "Next Resh",
     inWord: "in",
-    equinoxNext: "Next Vernal Equinox ~±2h (local time)",
+    equinoxNext: "Next Equinox of the Gods ~±2h (local time)",
     tarot: "Tarot",
     placeStockholm: "Stockholm",
     placeLocal: "Local",
     cantGeo: "Could not get location (using Stockholm).",
     usingStockholm: "Using Stockholm.",
     usingLocal: "Using local location.",
-    langSwedish: "Svenska",
-    langEnglish: "English",
     era: "E.V.",
     annoLegis: "Anno Legis",
     moonPhase: {
@@ -76,7 +74,6 @@ const I18N = {
   }
 };
 
-// Veckodag på latin
 const weekdayLatin = [
   "Dies Solis",
   "Dies Lunae",
@@ -87,7 +84,6 @@ const weekdayLatin = [
   "Dies Saturnii",
 ];
 
-// Zodiak-tecken (latin genitiv)
 const signLatinGen = [
   "Arietis", "Tauri", "Geminorum", "Cancri", "Leonis", "Virginis",
   "Librae", "Scorpii", "Sagittarii", "Capricorni", "Aquarii", "Piscium",
@@ -141,7 +137,7 @@ function midpointDate(a, b){
 function toDate(x){
   if (!x) return null;
   if (x instanceof Date) return x;
-  if (x.date instanceof Date) return x.date;        // AstroTime.date
+  if (x.date instanceof Date) return x.date;
   if (typeof x.ToDate === "function") {
     const d = x.ToDate();
     return d instanceof Date ? d : null;
@@ -150,8 +146,7 @@ function toDate(x){
 }
 
 /** =========================
- *  Thelemic Year (Docosade:within)
- *  New Year at Vernal Equinox (UTC calc, displayed in local time)
+ *  Thelemic Year
  *  ========================= */
 function vernalEquinoxUTC(year) {
   let a = new Date(Date.UTC(year, 2, 19, 0, 0, 0));
@@ -166,7 +161,7 @@ function vernalEquinoxUTC(year) {
   }
 
   for (let i = 0; i < 60; i++) {
-    const mid = new Date((a.getTime() + b.getTime() ) / 2);
+    const mid = new Date((a.getTime() + b.getTime()) / 2);
     const fm = f(mid);
     if (Math.abs(fm) < 1e-7) return mid;
     if (fa * fm <= 0) b = mid;
@@ -200,18 +195,17 @@ function roman(n, upper = true) {
 }
 
 /** =========================
- *  Tarot mapping (minimal)
+ *  Tarot (placeholder)
  *  ========================= */
 function tarotFor(docosade, within, lang){
-  if (lang === "sv") return "Lustan i Hierofanten";
-  return "Lust in the Hierophant";
+  return lang === "sv" ? "Lustan i Hierofanten" : "Lust in the Hierophant";
 }
 
 /** =========================
- *  Moon phase/age (approx via elongation)
+ *  Moon phase
  *  ========================= */
 function moonPhaseInfo(date){
-  const elong = Astronomy.MoonPhase(date); // degrees
+  const elong = Astronomy.MoonPhase(date);
   const phaseAngle = mod360(elong);
 
   const frac = (1 - Math.cos((phaseAngle * Math.PI) / 180)) / 2;
@@ -227,70 +221,58 @@ function moonPhaseInfo(date){
   else if (phaseAngle < 292.5) key = "lastQuarter";
   else key = "waningCrescent";
 
-  return { phaseAngle, frac, age, key };
+  return { frac, age, key };
 }
 
 /** =========================
  *  Resh times
- *  SUNRISE + SUNSET locked to SAME local date (from local midnight)
- *  NOON = exact midpoint between sunrise & sunset
+ *  - sunrise/sunset locked to SAME local date (start local midnight)
+ *  - noon = midpoint
+ *  - midnight = NEXT local midnight (always upcoming)
  *  ========================= */
 function searchRiseSetForLocalDate(observer, direction, dateLocal){
   const y = dateLocal.getFullYear();
   const m = dateLocal.getMonth();
   const d = dateLocal.getDate();
-
-  // Start search at local midnight => ensures "this day"
   const start = new Date(y, m, d, 0, 0, 0);
 
-  // First attempt
   try {
     const rs = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, direction, start, 1);
     const dt = toDate(rs);
     if (isValidDate(dt)) return dt;
-  } catch {
-    // ignore
-  }
+  } catch {}
 
-  // Fallback: SearchAltitude at -0.833° for Sun
   try {
     const alt = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, direction, start, 1, -0.833);
     const dt = toDate(alt);
     if (isValidDate(dt)) return dt;
-  } catch {
-    // ignore
-  }
+  } catch {}
 
   return null;
 }
 
-function reshTimesForLocalDate(lat, lon, dateLocal) {
+function nextLocalMidnight(now){
+  const m0 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  return new Date(m0.getTime() + 24 * 3600 * 1000);
+}
+
+function reshTimesForLocalDate(lat, lon, dateLocal, now){
   const observer = new Astronomy.Observer(lat, lon, 0);
 
   const sunrise = searchRiseSetForLocalDate(observer, +1, dateLocal);
   const sunset  = searchRiseSetForLocalDate(observer, -1, dateLocal);
 
   let noon = midpointDate(sunrise, sunset);
-
-  // Fallback if something is missing (rare)
   if (!isValidDate(noon)) {
     try {
-      const y = dateLocal.getFullYear();
-      const m = dateLocal.getMonth();
-      const d = dateLocal.getDate();
-      const anchor = new Date(y, m, d, 12, 0, 0);
-      const tr = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, anchor, 1);
-      noon = toDate(tr);
+      const anchor = new Date(dateLocal.getFullYear(), dateLocal.getMonth(), dateLocal.getDate(), 12, 0, 0);
+      noon = toDate(Astronomy.SearchTransit(Astronomy.Body.Sun, observer, anchor, 1));
     } catch {
       noon = null;
     }
   }
 
-  const y = dateLocal.getFullYear();
-  const m = dateLocal.getMonth();
-  const d = dateLocal.getDate();
-  const midnight = new Date(y, m, d + 1, 0, 0, 0);
-
+  const midnight = nextLocalMidnight(now);
   return { sunrise, noon, sunset, midnight };
 }
 
@@ -332,59 +314,62 @@ function renderReshGrid(rows){
 }
 
 /** =========================
+ *  Shimmer + Splash
+ *  ========================= */
+function triggerShimmer(){
+  const card = document.getElementById("card");
+  if (!card) return;
+  card.classList.add("shimmer");
+  setTimeout(() => card.classList.remove("shimmer"), 1400);
+}
+
+function hideSplashSoon(){
+  const splash = document.getElementById("splash");
+  if (!splash) return;
+  // vänta en liten stund så det känns “medvetet”
+  setTimeout(() => {
+    splash.classList.add("hidden");
+    setTimeout(() => splash.remove(), 320);
+  }, 300);
+}
+
+/** =========================
  *  Main compute/render
  *  ========================= */
 function computeAndRender(now = new Date()){
   const t = I18N[state.lang] || I18N.sv;
 
-  // Title: weekday latin
   const weekday = weekdayLatin[now.getDay()];
   setText("title", t.title(weekday));
 
-  // Sun / Moon positions
   const sun = Astronomy.SunPosition(now);
   const moon = Astronomy.EclipticGeoMoon(now);
 
   const sunFmt = formatLonAsSign(sun.elon);
   const moonFmt = formatLonAsSign(moon.lon);
 
-  // Thelemic year
   const ty = thelemicYearFor(now);
   const anno = `${t.annoLegis} ${roman(ty.docosade)}:${roman(ty.within, false)}`;
   const tarot = `${t.tarot}: ${tarotFor(ty.docosade, ty.within, state.lang)}`;
 
-  // Date + era
   const normalDate = `${formatDateLongLocal(now, state.lang)} ${t.era}`;
 
-  // Moon phase/age
   const mp = moonPhaseInfo(now);
   const pct = Math.round(mp.frac * 100);
   const phaseName = t.moonPhase[mp.key] || mp.key;
   const moonAge = Math.round(mp.age * 10) / 10;
 
-  // Location: Stockholm or Geo
   const use = state.useGeo && state.coords ? state.coords : state.stockholm;
   const placeLabel = state.useGeo && state.coords ? t.placeLocal : t.placeStockholm;
 
-  // Choose local date for resh times:
-  // if we are after today's sunset -> use tomorrow's date, otherwise today
   const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
-  let reshToday = reshTimesForLocalDate(use.lat, use.lon, todayLocal);
-  const todaySunset = reshToday.sunset;
-
-  const baseDateLocal =
-    (isValidDate(todaySunset) && now.getTime() > todaySunset.getTime())
-      ? new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12, 0, 0)
-      : todayLocal;
-
-  const resh = reshTimesForLocalDate(use.lat, use.lon, baseDateLocal);
+  const resh = reshTimesForLocalDate(use.lat, use.lon, todayLocal, now);
 
   const sunrise = isValidDate(resh.sunrise) ? resh.sunrise : null;
   const noonD   = isValidDate(resh.noon) ? resh.noon : null;
   const sunset  = isValidDate(resh.sunset) ? resh.sunset : null;
   const midD    = isValidDate(resh.midnight) ? resh.midnight : null;
 
-  // Next Resh event from now among these four
   const candidates = [
     { key:"sunrise",  icon:"🌅", label:t.sunrise,  when:sunrise },
     { key:"noon",     icon:"☀️", label:t.noon,     when:noonD },
@@ -399,21 +384,11 @@ function computeAndRender(now = new Date()){
     }
   }
 
-  // If none are future, compute for tomorrow and pick earliest
+  // fallback (edge-case)
   if (!next){
-    const tomorrowLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12, 0, 0);
-    const r2 = reshTimesForLocalDate(use.lat, use.lon, tomorrowLocal);
-    const cand2 = [
-      { key:"sunrise",  icon:"🌅", label:t.sunrise,  when:r2.sunrise },
-      { key:"noon",     icon:"☀️", label:t.noon,     when:r2.noon },
-      { key:"sunset",   icon:"🌇", label:t.sunset,   when:r2.sunset },
-      { key:"midnight", icon:"🌌", label:t.midnight, when:r2.midnight },
-    ].filter(x => x.when && isValidDate(x.when));
-    cand2.sort((a,b)=>a.when-b.when);
-    next = cand2[0] || null;
+    next = candidates.find(x => x.key === "sunrise") || null;
   }
 
-  // Render main panel
   setHTML("mainPanel", `
     <div>☉ ${t.sun} in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
     <div>☾ ${t.moon} in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
@@ -426,7 +401,6 @@ function computeAndRender(now = new Date()){
     <div class="moonSub">${t.moonAge}: ${moonAge} ${t.days}</div>
   `);
 
-  // Resh title + list
   setText("reshTitle", t.reshTitle(placeLabel));
 
   const rows = [
@@ -443,15 +417,13 @@ function computeAndRender(now = new Date()){
   }
   renderReshGrid(rows);
 
-  // Countdown
-  if (next){
+  if (next && next.when){
     const ms = next.when.getTime() - now.getTime();
     setText("countdown", `${t.nextResh}: ${next.icon} ${next.label} ${t.inWord} ${formatCountdown(ms)}`);
   }else{
     setText("countdown", "");
   }
 
-  // Next Equinox of the Gods (upcoming, rounded ~±2h) shown local time
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
@@ -482,10 +454,7 @@ function tryEnableGeo(){
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      state.coords = {
-        lat: pos.coords.latitude,
-        lon: pos.coords.longitude,
-      };
+      state.coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
       state.useGeo = true;
       localStorage.setItem("useGeo", "1");
       computeAndRender(new Date());
@@ -518,8 +487,22 @@ function toggleLang(){
  *  Boot
  *  ========================= */
 function boot(){
-  const card = document.getElementById("card");
-  if (card) setTimeout(() => card.classList.remove("shimmer"), 1400);
+  // Shimmer one time on start
+  triggerShimmer();
+
+  // Register SW and shimmer on update
+  const updateSW = registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      // subtle shimmer before refresh/reload
+      triggerShimmer();
+      // apply update ASAP
+      setTimeout(() => updateSW(true), 450);
+    },
+    onOfflineReady() {
+      // no-op
+    },
+  });
 
   const geoBtn = document.getElementById("geoBtn");
   const langBtn = document.getElementById("langBtn");
@@ -529,11 +512,15 @@ function boot(){
   if (langBtn) langBtn.addEventListener("click", toggleLang);
   if (resetBtn) resetBtn.addEventListener("click", setStockholm);
 
-  if (state.useGeo) {
-    tryEnableGeo();
-  }
+  if (state.useGeo) tryEnableGeo();
 
+  // initial render
   computeAndRender(new Date());
+
+  // hide splash after first paint
+  hideSplashSoon();
+
+  // update every 1s
   setInterval(() => computeAndRender(new Date()), 1000);
 }
 
