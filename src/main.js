@@ -1,6 +1,5 @@
 import "./style.css";
 import * as Astronomy from "astronomy-engine";
-import { registerSW } from "virtual:pwa-register";
 
 /** =========================
  *  Språk/texter
@@ -24,8 +23,6 @@ const I18N = {
     placeStockholm: "Stockholm",
     placeLocal: "Lokal plats",
     cantGeo: "Kunde inte hämta plats (använder Stockholm).",
-    usingStockholm: "Använder Stockholm.",
-    usingLocal: "Använder lokal plats.",
     era: "E.V.",
     annoLegis: "Anno Legis",
     moonPhase: {
@@ -57,8 +54,6 @@ const I18N = {
     placeStockholm: "Stockholm",
     placeLocal: "Local",
     cantGeo: "Could not get location (using Stockholm).",
-    usingStockholm: "Using Stockholm.",
-    usingLocal: "Using local location.",
     era: "E.V.",
     annoLegis: "Anno Legis",
     moonPhase: {
@@ -74,6 +69,7 @@ const I18N = {
   }
 };
 
+// Veckodag på latin
 const weekdayLatin = [
   "Dies Solis",
   "Dies Lunae",
@@ -84,6 +80,7 @@ const weekdayLatin = [
   "Dies Saturnii",
 ];
 
+// Zodiak-tecken (latin genitiv)
 const signLatinGen = [
   "Arietis", "Tauri", "Geminorum", "Cancri", "Leonis", "Virginis",
   "Librae", "Scorpii", "Sagittarii", "Capricorni", "Aquarii", "Piscium",
@@ -92,22 +89,17 @@ const signLatinGen = [
 /** =========================
  *  Utilities
  *  ========================= */
-function mod360(x) {
-  const m = x % 360;
-  return m < 0 ? m + 360 : m;
-}
-function wrap180(x) {
-  let y = (x + 180) % 360;
-  if (y < 0) y += 360;
-  return y - 180;
-}
+function mod360(x) { const m = x % 360; return m < 0 ? m + 360 : m; }
+function wrap180(x) { let y = (x + 180) % 360; if (y < 0) y += 360; return y - 180; }
+function pad2(n){ return String(n).padStart(2, "0"); }
+function isValidDate(d){ return d instanceof Date && !isNaN(d.getTime()); }
+
 function formatLonAsSign(lonDeg) {
   const lon = mod360(lonDeg);
   const sign = Math.floor(lon / 30);
   const deg = lon - sign * 30;
   return { deg, sign: signLatinGen[sign] };
 }
-function pad2(n){ return String(n).padStart(2, "0"); }
 function formatTimeLocal(date){
   return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
@@ -118,8 +110,6 @@ function formatDateLongLocal(date, lang){
     year: "numeric"
   });
 }
-function isValidDate(d){ return d instanceof Date && !isNaN(d.getTime()); }
-
 function formatCountdown(ms){
   ms = Math.max(0, ms);
   const total = Math.floor(ms / 1000);
@@ -128,12 +118,10 @@ function formatCountdown(ms){
   const ss = total % 60;
   return `${pad2(hh)}:${pad2(mm)}:${pad2(ss)}`;
 }
-
 function midpointDate(a, b){
   if (!isValidDate(a) || !isValidDate(b)) return null;
   return new Date((a.getTime() + b.getTime()) / 2);
 }
-
 function toDate(x){
   if (!x) return null;
   if (x instanceof Date) return x;
@@ -159,13 +147,11 @@ function vernalEquinoxUTC(year) {
     b = new Date(b.getTime() + 24 * 3600 * 1000);
     fa = f(a); fb = f(b);
   }
-
   for (let i = 0; i < 60; i++) {
     const mid = new Date((a.getTime() + b.getTime()) / 2);
     const fm = f(mid);
     if (Math.abs(fm) < 1e-7) return mid;
-    if (fa * fm <= 0) b = mid;
-    else a = mid;
+    if (fa * fm <= 0) b = mid; else a = mid;
   }
   return new Date((a.getTime() + b.getTime()) / 2);
 }
@@ -195,19 +181,18 @@ function roman(n, upper = true) {
 }
 
 /** =========================
- *  Tarot (placeholder)
+ *  Tarot placeholder
  *  ========================= */
-function tarotFor(docosade, within, lang){
+function tarotFor(_docosade, _within, lang){
   return lang === "sv" ? "Lustan i Hierofanten" : "Lust in the Hierophant";
 }
 
 /** =========================
- *  Moon phase
+ *  Moon phase/age
  *  ========================= */
 function moonPhaseInfo(date){
   const elong = Astronomy.MoonPhase(date);
   const phaseAngle = mod360(elong);
-
   const frac = (1 - Math.cos((phaseAngle * Math.PI) / 180)) / 2;
   const age = (phaseAngle / 360) * 29.53059;
 
@@ -225,9 +210,9 @@ function moonPhaseInfo(date){
 }
 
 /** =========================
- *  Resh times
- *  - sunrise/sunset locked to SAME local date (start local midnight)
- *  - noon = midpoint
+ *  Resh times (robust)
+ *  - sunrise/sunset locked to SAME local date (from local midnight)
+ *  - noon = midpoint (exactly between sunrise & sunset)
  *  - midnight = NEXT local midnight (always upcoming)
  *  ========================= */
 function searchRiseSetForLocalDate(observer, direction, dateLocal){
@@ -242,6 +227,7 @@ function searchRiseSetForLocalDate(observer, direction, dateLocal){
     if (isValidDate(dt)) return dt;
   } catch {}
 
+  // fallback
   try {
     const alt = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, direction, start, 1, -0.833);
     const dt = toDate(alt);
@@ -287,6 +273,37 @@ const state = {
 };
 
 /** =========================
+ *  UI injection (prevents "black screen")
+ *  ========================= */
+function ensureUIMount(){
+  const card = document.getElementById("card");
+  if (!card) return;
+
+  // if title exists, UI already mounted
+  if (document.getElementById("title")) return;
+
+  card.innerHTML = `
+    <div class="topbar">
+      <button id="geoBtn" class="iconBtn" aria-label="Geo">📍</button>
+      <button id="langBtn" class="iconBtn" aria-label="Language">🌐</button>
+      <button id="resetBtn" class="iconBtn" aria-label="Reset">↺</button>
+    </div>
+
+    <div id="title" class="title"></div>
+
+    <div id="mainPanel" class="mainPanel"></div>
+
+    <div id="reshTitle" class="reshTitle"></div>
+
+    <div id="reshGrid" class="reshGrid"></div>
+
+    <div id="countdown" class="countdown"></div>
+
+    <div id="footerPanel" class="footer"></div>
+  `;
+}
+
+/** =========================
  *  UI helpers
  *  ========================= */
 function setText(id, text){
@@ -297,7 +314,6 @@ function setHTML(id, html){
   const el = document.getElementById(id);
   if (el) el.innerHTML = html;
 }
-
 function renderReshGrid(rows){
   const grid = document.getElementById("reshGrid");
   if (!grid) return;
@@ -326,11 +342,10 @@ function triggerShimmer(){
 function hideSplashSoon(){
   const splash = document.getElementById("splash");
   if (!splash) return;
-  // vänta en liten stund så det känns “medvetet”
   setTimeout(() => {
     splash.classList.add("hidden");
-    setTimeout(() => splash.remove(), 320);
-  }, 300);
+    setTimeout(() => splash.remove(), 350);
+  }, 250);
 }
 
 /** =========================
@@ -339,29 +354,34 @@ function hideSplashSoon(){
 function computeAndRender(now = new Date()){
   const t = I18N[state.lang] || I18N.sv;
 
-  const weekday = weekdayLatin[now.getDay()];
-  setText("title", t.title(weekday));
+  // Title
+  setText("title", t.title(weekdayLatin[now.getDay()]));
 
+  // Sun / Moon positions
   const sun = Astronomy.SunPosition(now);
   const moon = Astronomy.EclipticGeoMoon(now);
-
   const sunFmt = formatLonAsSign(sun.elon);
   const moonFmt = formatLonAsSign(moon.lon);
 
+  // Thelemic year
   const ty = thelemicYearFor(now);
   const anno = `${t.annoLegis} ${roman(ty.docosade)}:${roman(ty.within, false)}`;
   const tarot = `${t.tarot}: ${tarotFor(ty.docosade, ty.within, state.lang)}`;
 
+  // Date + era
   const normalDate = `${formatDateLongLocal(now, state.lang)} ${t.era}`;
 
+  // Moon
   const mp = moonPhaseInfo(now);
   const pct = Math.round(mp.frac * 100);
   const phaseName = t.moonPhase[mp.key] || mp.key;
   const moonAge = Math.round(mp.age * 10) / 10;
 
+  // Location
   const use = state.useGeo && state.coords ? state.coords : state.stockholm;
   const placeLabel = state.useGeo && state.coords ? t.placeLocal : t.placeStockholm;
 
+  // Resh times for today (sunrise/noon/sunset), midnight always upcoming
   const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
   const resh = reshTimesForLocalDate(use.lat, use.lon, todayLocal, now);
 
@@ -370,6 +390,7 @@ function computeAndRender(now = new Date()){
   const sunset  = isValidDate(resh.sunset) ? resh.sunset : null;
   const midD    = isValidDate(resh.midnight) ? resh.midnight : null;
 
+  // Next Resh (by time)
   const candidates = [
     { key:"sunrise",  icon:"🌅", label:t.sunrise,  when:sunrise },
     { key:"noon",     icon:"☀️", label:t.noon,     when:noonD },
@@ -383,12 +404,9 @@ function computeAndRender(now = new Date()){
       if (!next || c.when < next.when) next = c;
     }
   }
+  if (!next) next = candidates[0] || null;
 
-  // fallback (edge-case)
-  if (!next){
-    next = candidates.find(x => x.key === "sunrise") || null;
-  }
-
+  // Render main panel
   setHTML("mainPanel", `
     <div>☉ ${t.sun} in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
     <div>☾ ${t.moon} in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
@@ -401,6 +419,7 @@ function computeAndRender(now = new Date()){
     <div class="moonSub">${t.moonAge}: ${moonAge} ${t.days}</div>
   `);
 
+  // Resh list
   setText("reshTitle", t.reshTitle(placeLabel));
 
   const rows = [
@@ -417,13 +436,15 @@ function computeAndRender(now = new Date()){
   }
   renderReshGrid(rows);
 
-  if (next && next.when){
+  // Countdown
+  if (next){
     const ms = next.when.getTime() - now.getTime();
     setText("countdown", `${t.nextResh}: ${next.icon} ${next.label} ${t.inWord} ${formatCountdown(ms)}`);
-  }else{
+  } else {
     setText("countdown", "");
   }
 
+  // Next equinox footer
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
@@ -487,23 +508,10 @@ function toggleLang(){
  *  Boot
  *  ========================= */
 function boot(){
-  // Shimmer one time on start
+  ensureUIMount();
   triggerShimmer();
 
-  // Register SW and shimmer on update
-  const updateSW = registerSW({
-    immediate: true,
-    onNeedRefresh() {
-      // subtle shimmer before refresh/reload
-      triggerShimmer();
-      // apply update ASAP
-      setTimeout(() => updateSW(true), 450);
-    },
-    onOfflineReady() {
-      // no-op
-    },
-  });
-
+  // Buttons (now exist because we mounted UI)
   const geoBtn = document.getElementById("geoBtn");
   const langBtn = document.getElementById("langBtn");
   const resetBtn = document.getElementById("resetBtn");
@@ -512,15 +520,27 @@ function boot(){
   if (langBtn) langBtn.addEventListener("click", toggleLang);
   if (resetBtn) resetBtn.addEventListener("click", setStockholm);
 
+  // Try geo silently if user enabled
   if (state.useGeo) tryEnableGeo();
 
-  // initial render
   computeAndRender(new Date());
-
-  // hide splash after first paint
   hideSplashSoon();
 
-  // update every 1s
+  // SW update shimmer (optional; does not crash if module missing)
+  import("virtual:pwa-register")
+    .then(({ registerSW }) => {
+      const updateSW = registerSW({
+        immediate: true,
+        onNeedRefresh() {
+          triggerShimmer();
+          setTimeout(() => updateSW(true), 450);
+        },
+      });
+    })
+    .catch(() => {
+      // ignore: no PWA register module in this build
+    });
+
   setInterval(() => computeAndRender(new Date()), 1000);
 }
 
