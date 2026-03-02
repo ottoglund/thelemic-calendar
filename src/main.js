@@ -182,8 +182,36 @@ function roman(n, upper = true){
 /** =========================
  *  Tarot placeholder
  *  ========================= */
-function tarotFor(_docosade, _within, lang){
-  return lang === "sv" ? "Lustan i Hierofanten" : "Lust in the Hierophant";
+// Thoth Major Arcana (0–21)
+const THOTH_TRUMPS = [
+  { sv: "Narren", en: "The Fool" },
+  { sv: "Magikern", en: "The Magus" },
+  { sv: "Översteprästinnan", en: "The Priestess" },
+  { sv: "Kejsarinnan", en: "The Empress" },
+  { sv: "Kejsaren", en: "The Emperor" },
+  { sv: "Hierofanten", en: "The Hierophant" },
+  { sv: "De äskande", en: "The Lovers" },
+  { sv: "Vagnen", en: "The Chariot" },
+  { sv: "Justering", en: "Adjustment" },
+  { sv: "Eremiten", en: "The Hermit" },
+  { sv: "Lyckohjulet", en: "Fortune" },
+  { sv: "Lustan", en: "Lust" },
+  { sv: "Den Hängde", en: "The Hanged Man" },
+  { sv: "Döden", en: "Death" },
+  { sv: "Konsten", en: "Art" },
+  { sv: "Djävulen", en: "The Devil" },
+  { sv: "Tornet", en: "The Tower" },
+  { sv: "Stjärnan", en: "The Star" },
+  { sv: "Månen", en: "The Moon" },
+  { sv: "Solen", en: "The Sun" },
+  { sv: "Aeonen", en: "The Aeon" },
+  { sv: "Universum", en: "The Universe" },
+];
+
+function tarotFor(_docosade, within, lang){
+  const index = within % 22;
+  const card = THOTH_TRUMPS[index];
+  return lang === "sv" ? card.sv : card.en;
 }
 
 /** =========================
