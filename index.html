@@ -1,3 +1,44 @@
-git add index.html
-git commit -m "Remove splash overlay; restore clean root index.html"
-npm run deploy
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Thelemic Date</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/thelemic-calendar/manifest.webmanifest" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/thelemic-calendar/icons/icon-192.png" />
+
+    <!-- Stop white background flash early -->
+    <style>
+      html, body { height: 100%; }
+      body { margin: 0; background: #000; }
+    </style>
+    <script type="module" crossorigin src="/thelemic-calendar/assets/index-D5XkAxt0.js"></script>
+    <link rel="stylesheet" crossorigin href="/thelemic-calendar/assets/index-CFV3XP-l.css">
+  <link rel="manifest" href="/thelemic-calendar/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/thelemic-calendar/registerSW.js"></script></head>
+
+  <body>
+    <div id="card" class="card shimmer">
+      <div class="topbar">
+        <button id="geoBtn" class="iconBtn" aria-label="Geo">📍</button>
+        <button id="langBtn" class="iconBtn" aria-label="Language">🌐</button>
+        <button id="resetBtn" class="iconBtn" aria-label="Reset">↺</button>
+      </div>
+
+      <div id="title" class="title"></div>
+
+      <div id="mainPanel" class="mainPanel"></div>
+
+      <div id="reshTitle" class="reshTitle"></div>
+      <div id="reshGrid" class="reshGrid"></div>
+
+      <div id="countdown" class="countdown"></div>
+      <div id="footerPanel" class="footer"></div>
+    </div>
+
+  </body>
+</html>
