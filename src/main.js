@@ -1,7 +1,7 @@
 import "./style.css";
 import * as Astronomy from "astronomy-engine";
 
-const APP_VERSION = "v1.0.4";
+const APP_VERSION = "v1.0.3";
 
 /* =========================
    I18N
@@ -158,10 +158,10 @@ function thelemicYearFor(now){
 
 const TRUMPS=[
  "Narren","Magikern","Översteprästinnan","Kejsarinnan",
- "Kejsaren","Hierofanten","De älskande","Vagnen",
- "Justering","Eremiten","Lyckohjulet","Lustan",
- "Den Hängde","Döden","Konsten","Djävulen",
- "Tornet","Stjärnan","Månen","Solen","Aeonen","Universum"
+ "Kejsaren","Hierofanten","Älskarna","Stridsvagnen",
+ "Justering","Eremiten","Lyckohjulet","Lust",
+ "Den Hängde Mannen","Döden","Konst","Djävulen",
+ "Tornet","Stjärnan","Månen","Solen","Aeon","Universum"
 ];
 
 function svInForm(name){
@@ -223,8 +223,8 @@ function computeAndRender(){
   }
 
   document.getElementById("mainPanel").innerHTML=`
-    <div>☉ in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
-    <div>☾ in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
+  <div>☉ in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
+  <div>☾ in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
     <div class="anno">${anno}</div>
     <div class="tarot">${tarot}</div>
     <div class="ve">${formatDateLongLocal(now,"sv")} ${t.era}</div>
