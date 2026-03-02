@@ -1,6 +1,8 @@
 import "./style.css";
 import * as Astronomy from "astronomy-engine";
 
+const APP_VERSION = "v1.0.1";
+
 /** =========================
  *  Språk/texter
  *  ========================= */
@@ -180,9 +182,8 @@ function roman(n, upper = true){
 }
 
 /** =========================
- *  Tarot placeholder
+ *  Tarot (Thoth trumfar 0–21)
  *  ========================= */
-// Thoth Major Arcana (0–21)
 const THOTH_TRUMPS = [
   { sv: "Narren", en: "The Fool" },
   { sv: "Magikern", en: "The Magus" },
@@ -190,21 +191,21 @@ const THOTH_TRUMPS = [
   { sv: "Kejsarinnan", en: "The Empress" },
   { sv: "Kejsaren", en: "The Emperor" },
   { sv: "Hierofanten", en: "The Hierophant" },
-  { sv: "De äskande", en: "The Lovers" },
-  { sv: "Vagnen", en: "The Chariot" },
+  { sv: "Älskarna", en: "The Lovers" },
+  { sv: "Stridsvagnen", en: "The Chariot" },
   { sv: "Justering", en: "Adjustment" },
   { sv: "Eremiten", en: "The Hermit" },
   { sv: "Lyckohjulet", en: "Fortune" },
-  { sv: "Lustan", en: "Lust" },
-  { sv: "Den Hängde", en: "The Hanged Man" },
+  { sv: "Lust", en: "Lust" },
+  { sv: "Den Hängde Mannen", en: "The Hanged Man" },
   { sv: "Döden", en: "Death" },
-  { sv: "Konsten", en: "Art" },
+  { sv: "Konst", en: "Art" },
   { sv: "Djävulen", en: "The Devil" },
   { sv: "Tornet", en: "The Tower" },
   { sv: "Stjärnan", en: "The Star" },
   { sv: "Månen", en: "The Moon" },
   { sv: "Solen", en: "The Sun" },
-  { sv: "Aeonen", en: "The Aeon" },
+  { sv: "Aeon", en: "The Aeon" },
   { sv: "Universum", en: "The Universe" },
 ];
 
@@ -409,7 +410,7 @@ function computeAndRender(now = new Date()){
     setText("countdown", "");
   }
 
-  // Next equinox (rounded to ~2h) shown in local time
+  // Next equinox (rounded to ~2h) shown in local time + version
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
@@ -419,7 +420,7 @@ function computeAndRender(now = new Date()){
 
   setText(
     "footerPanel",
-    `${t.equinoxNext}: ${eqRounded.getFullYear()}-${pad2(eqRounded.getMonth()+1)}-${pad2(eqRounded.getDate())} ${pad2(eqRounded.getHours())}:${pad2(eqRounded.getMinutes())}`
+    `${t.equinoxNext}: ${eqRounded.getFullYear()}-${pad2(eqRounded.getMonth()+1)}-${pad2(eqRounded.getDate())} ${pad2(eqRounded.getHours())}:${pad2(eqRounded.getMinutes())} • ${APP_VERSION}`
   );
 }
 
