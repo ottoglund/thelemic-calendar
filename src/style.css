@@ -76,7 +76,7 @@ body{
   color: var(--gold);
 }
 
-/* main panel */
+/* main panel (CENTER EVERYTHING ABOVE RESH) */
 .mainPanel{
   border-radius: 18px;
   border: 1px solid var(--stroke2);
@@ -84,6 +84,17 @@ body{
   padding: 12px 12px;
   line-height: 1.35;
   font-size: 15px;
+
+  /* <-- FIX: center all content */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* make each row occupy full width so centering looks consistent */
+.mainPanel > div{
+  width: 100%;
 }
 
 .mainPanel .anno{
@@ -120,6 +131,7 @@ body{
   font-weight: 700;
   letter-spacing: 0.2px;
   color: var(--gold);
+  text-align: center;
 }
 
 .reshGrid{
