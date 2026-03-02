@@ -182,8 +182,48 @@ function roman(n, upper = true){
 /** =========================
  *  Tarot placeholder
  *  ========================= */
-function tarotFor(_docosade, _within, lang){
-  return lang === "sv" ? "Lustan i Hierofanten" : "Lust in the Hierophant";
+const THOTH_TRUMPS = [
+  { sv: "Narren", en: "The Fool" },
+  { sv: "Magikern", en: "The Magus" },
+  { sv: "Översteprästinnan", en: "The Priestess" },
+  { sv: "Kejsarinnan", en: "The Empress" },
+  { sv: "Kejsaren", en: "The Emperor" },
+  { sv: "Hierofanten", en: "The Hierophant" },
+  { sv: "De älskande", en: "The Lovers" },
+  { sv: "Vagnen", en: "The Chariot" },
+  { sv: "Justering", en: "Adjustment" },
+  { sv: "Eremiten", en: "The Hermit" },
+  { sv: "Lyckohjulet", en: "Fortune" },
+  { sv: "Lustan", en: "Lust" },
+  { sv: "Den Hängde", en: "The Hanged Man" },
+  { sv: "Döden", en: "Death" },
+  { sv: "Konsten", en: "Art" },
+  { sv: "Djävulen", en: "The Devil" },
+  { sv: "Tornet", en: "The Tower" },
+  { sv: "Stjärnan", en: "The Star" },
+  { sv: "Månen", en: "The Moon" },
+  { sv: "Solen", en: "The Sun" },
+  { sv: "Aeonen", en: "The Aeon" },
+  { sv: "Universum", en: "The Universe" },
+];
+
+function svInForm(name){
+  if (name === "Lust") return "Lustan";
+  return name;
+}
+
+function tarotFor(docosade, within, lang){
+  const d = docosade % 22;
+  const w = within % 22;
+
+  const doco = THOTH_TRUMPS[d];
+  const win  = THOTH_TRUMPS[w];
+
+  if (lang === "sv") {
+    return `${svInForm(win.sv)} i ${doco.sv}`;
+  }
+
+  return `${win.en} in ${doco.en}`;
 }
 
 /** =========================
@@ -347,8 +387,8 @@ function computeAndRender(now = new Date()){
   }
 
   setHTML("mainPanel", `
-    <div>☉ ${t.sun} in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
-    <div>☾ ${t.moon} in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
+  <div>☉ in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
+  <div>☾ in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
 
     <div class="anno">${anno}</div>
     <div class="tarot">${tarot}</div>
