@@ -204,3 +204,48 @@ body{
   body { -webkit-text-size-adjust: 100%; }
   .card { color: rgba(212,175,55,0.96); }
 }
+/* --- iPhone: fyll hela skärmen utan scroll, behåll samma layout --- */
+
+/* använd "svh" (stabil viewport på iOS) och se till att body inte kan bli högre än skärmen */
+html, body{
+  height: 100%;
+}
+
+body{
+  min-height: 100svh;
+  height: 100svh;
+  overflow: hidden;          /* stoppar scroll */
+  align-items: stretch;      /* låt kortet kunna fylla höjden */
+}
+
+/* gör att kortet exakt får plats inom body:s safe-area padding */
+.card{
+  height: calc(
+    100svh
+    - (18px + env(safe-area-inset-top))
+    - (18px + env(safe-area-inset-bottom))
+  );
+  max-height: calc(
+    100svh
+    - (18px + env(safe-area-inset-top))
+    - (18px + env(safe-area-inset-bottom))
+  );
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* viktigt i flex-layout: låt barn krympa korrekt istället för att tvinga overflow */
+.mainPanel,
+.reshGrid{
+  min-height: 0;
+}
+
+/* låt mitten/botten “ta plats” snyggt utan att ändra utseendet */
+.reshGrid{
+  flex: 1 1 auto;
+}
+
+.countdown{
+  margin-top: auto; /* trycker ner countdown + footer till botten när det finns extra höjd */
+}
