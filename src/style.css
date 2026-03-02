@@ -187,7 +187,7 @@ body{
   to { transform: translateX(40%); }
 }
 
-/* iOS readability bump (very subtle) */
+/* iOS readability bump (subtle) */
 @supports (-webkit-touch-callout: none) {
   body { -webkit-text-size-adjust: 100%; }
   .card { color: rgba(212,175,55,0.96); }
