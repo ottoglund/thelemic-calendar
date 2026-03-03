@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
 :root{
   --bg: #000000;
   --panel: rgba(255,255,255,0.04);
@@ -7,129 +9,126 @@
   --gold: rgba(212,175,55,0.94);
   --gold2: rgba(212,175,55,0.78);
   --muted: rgba(212,175,55,0.62);
-  --shadow: 0 14px 40px rgba(0,0,0,0.55);
+  --shadow: 0 14px 40px rgba(0,0,0,0.60);
+
+  --font-display: "Cinzel", serif;
+  --font-body: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
 *{ box-sizing: border-box; }
 
 html, body{
-  height:100%;
-  background: var(--bg);
-  color: var(--gold);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  height: 100%;
 }
 
 body{
-  margin:0;
+  margin: 0;
+  background: var(--bg);
   display:flex;
   justify-content:center;
-  align-items:flex-start;
-  padding:
-    calc(18px + env(safe-area-inset-top))
-    14px
-    calc(18px + env(safe-area-inset-bottom))
-    14px;
+  align-items:center;
+  padding: calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+  font-family: var(--font-body);
+  color: rgba(255,255,255,0.90);
 }
 
 .card{
-  width: min(460px, 100%);
-  border-radius: 26px;
+  width: min(720px, 100%);
+  border-radius: 22px;
   border: 1px solid var(--stroke);
-  background: radial-gradient(140% 120% at 50% 0%, rgba(212,175,55,0.08), rgba(0,0,0,0) 55%),
-              linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.0));
-  box-shadow: var(--shadow);
-  padding: 14px;
+  background: radial-gradient(1200px 700px at 50% -200px, rgba(212,175,55,0.12), rgba(0,0,0,0.0) 55%),
+              rgba(255,255,255,0.02);
+  padding: 16px 16px 14px;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
-/* topbar */
 .topbar{
   display:flex;
-  justify-content:flex-end;
-  gap: 8px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .iconBtn{
+  appearance: none;
   border: 1px solid var(--stroke2);
   background: rgba(0,0,0,0.35);
   color: var(--gold);
   border-radius: 14px;
-  padding: 8px 10px;
-  font-size: 16px;
+  padding: 10px 12px;
+  font-size: 14px;
   line-height: 1;
-  cursor:pointer;
 }
 
-.iconBtn:active{
-  transform: translateY(1px);
-}
-
-/* title */
 .title{
+  margin-top: 10px;
   text-align:center;
-  font-family: ui-serif, Georgia, "Times New Roman", serif;
-  letter-spacing: 0.5px;
-  font-size: 26px;
-  margin: 8px 0 12px 0;
   color: var(--gold);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  text-transform: none;       /* was uppercase */
+  font-variant: small-caps;   /* matches your look */
 }
 
-/* main panel */
 .mainPanel{
+  margin-top: 10px;
+  padding: 12px 12px 10px;
   border-radius: 18px;
   border: 1px solid var(--stroke2);
   background: var(--panel);
-  padding: 12px 12px;
   line-height: 1.35;
   font-size: 15px;
 }
 
-.mainPanel .anno{
-  margin-top: 8px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-}
-
-.mainPanel .tarot{
-  margin-top: 4px;
-  color: var(--gold2);
-}
-
-.mainPanel .ve{
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.mainPanel .moon{
+.anno{
   margin-top: 10px;
-  font-weight: 600;
-}
-
-.mainPanel .moonSub{
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-/* resh section */
-.reshTitle{
-  margin: 14px 2px 8px 2px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
   color: var(--gold);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.tarot{
+  margin-top: 6px;
+  color: rgba(255,255,255,0.92);
+}
+
+.ve{
+  margin-top: 6px;
+  color: rgba(255,255,255,0.80);
+}
+
+.moon{
+  margin-top: 10px;
+  color: rgba(255,255,255,0.92);
+}
+
+.moonSub{
+  margin-top: 2px;
+  color: rgba(255,255,255,0.80);
+  font-size: 13px;
+}
+
+.reshTitle{
+  margin-top: 12px;
+  text-align:center;
+  color: var(--gold2);
+  letter-spacing: 0.03em;
+  font-size: 14px;
 }
 
 .reshGrid{
+  margin-top: 10px;
   display:grid;
   gap: 10px;
 }
 
 .reshItem{
   display:flex;
-  justify-content:space-between;
+  justify-content: space-between;
   align-items:center;
   padding: 10px 12px;
   border-radius: 16px;
@@ -154,6 +153,7 @@ body{
   margin-top: 12px;
   text-align:center;
   color: var(--gold2);
+  font-family: var(--font-display);
   font-size: 14px;
 }
 
@@ -191,4 +191,185 @@ body{
 @supports (-webkit-touch-callout: none) {
   body { -webkit-text-size-adjust: 100%; }
   .card { color: rgba(212,175,55,0.96); }
+}
+
+/* =========================
+   Resh modal
+   ========================= */
+.modal{
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: none;
+}
+
+.modal.isOpen{ display: block; }
+
+.modalBackdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.68);
+}
+
+.modalSheet{
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0;
+  margin: 0 auto;
+  width: min(720px, calc(100vw - 24px));
+  border: 1px solid var(--stroke);
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.90);
+  box-shadow: var(--shadow);
+}
+
+.modalClose{
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke2);
+  background: rgba(0,0,0,0.55);
+  color: var(--gold);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.modalMedia{
+  position:relative;
+  height: min(38vh, 320px);
+  background-size: contain;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-color: #000;
+}
+
+.modalMedia::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.10),
+    rgba(0,0,0,0.50),
+    rgba(0,0,0,0.92)
+  );
+}
+
+.modalContent{
+  padding: 14px 16px 18px;
+  max-height: 46vh;
+  overflow: auto;
+}
+
+.modalKicker{
+  color: var(--muted);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modalTitle{
+  margin: 6px 0 10px;
+  font-size: clamp(22px, 6vw, 28px);
+  color: var(--gold);
+  font-family: var(--font-display);
+}
+
+.modalText{
+  color: rgba(255,255,255,0.90);
+  font-size: clamp(16px, 4.6vw, 18px);
+  line-height: 1.35;
+  white-space: pre-line;
+}
+
+/* Make Resh rows tappable */
+.reshItem{
+  cursor: pointer;
+  user-select: none;
+}
+.reshItem:active{
+  transform: translateY(1px);
+}
+
+/* Desktop/tablet: image beside text */
+@media (min-width: 560px){
+  .modalSheet{
+    display: grid;
+    grid-template-columns: 42% 58%;
+    align-items: stretch;
+  }
+  .modalMedia{
+    height: auto;
+    min-height: 320px;
+  }
+  .modalContent{
+    max-height: none;
+  }
+}
+
+/* =========================
+   iPhone: fill screen, no scroll (keeps layout)
+   ========================= */
+body{
+  min-height: 100svh;
+  height: 100svh;
+  overflow: hidden;
+  align-items: stretch;
+}
+
+.card{
+  height: calc(
+    100svh
+    - (18px + env(safe-area-inset-top))
+    - (18px + env(safe-area-inset-bottom))
+  );
+  max-height: calc(
+    100svh
+    - (18px + env(safe-area-inset-top))
+    - (18px + env(safe-area-inset-bottom))
+  );
+  display: flex;
+  flex-direction: column;
+}
+
+.mainPanel,
+.reshGrid{
+  min-height: 0;
+}
+
+.reshGrid{
+  flex: 1 1 auto;
+}
+
+.countdown{
+  margin-top: auto;
+}
+
+/* =========================
+   Text scaling
+   ========================= */
+.topbar{
+  font-size: clamp(18px, 4.8vw, 22px);
+  letter-spacing: 0.5px;
+}
+
+.title{
+  font-size: clamp(30px, 8.5vw, 40px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.mainPanel{
+  font-size: clamp(20px, 5.2vw, 24px);
+}
+
+.countdown{
+  font-size: clamp(22px, 6vw, 32px);
+  font-weight: 700;
+  line-height: 1.2;
 }

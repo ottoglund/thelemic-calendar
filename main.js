@@ -1,5 +1,20 @@
-import "./style.css";
-import * as Astronomy from "astronomy-engine";
+const Astronomy = window.Astronomy;
+
+if (!Astronomy) {
+  const el = document.getElementById("mainPanel");
+  if (el) {
+    el.innerHTML = `
+      <div style="color:#d4af37; font-weight:700; margin-bottom:8px;">
+        Astronomy-engine laddades inte
+      </div>
+      <div style="opacity:0.85">
+        Kontrollera att index.html laddar astronomy.min.js före main.js och att du kör via Live Server (inte file://).
+      </div>
+    `;
+  }
+  throw new Error("Astronomy is not loaded (window.Astronomy is undefined).");
+}
+/* global Astronomy */
 
 /** =========================
  *  Språk/texter
@@ -8,7 +23,7 @@ const I18N = {
   sv: {
     title: (weekdayLatin) => weekdayLatin,
     sun: "Sol",
-    moon: "Måne",
+    moon: "Luna",
     moonAge: "Månålder",
     days: "dygn",
     reshTitle: (placeLabel) => `Resh (${placeLabel})`,
@@ -38,8 +53,8 @@ const I18N = {
   },
   en: {
     title: (weekdayLatin) => weekdayLatin,
-    sun: "Sun",
-    moon: "Moon",
+    sun: "Sol",
+    moon: "Luna",
     moonAge: "Moon age",
     days: "days",
     reshTitle: (placeLabel) => `Resh (${placeLabel})`,
@@ -182,8 +197,42 @@ function roman(n, upper = true){
 /** =========================
  *  Tarot placeholder
  *  ========================= */
-function tarotFor(_docosade, _within, lang){
-  return lang === "sv" ? "Lustan i Hierofanten" : "Lust in the Hierophant";
+// Thoth Tarot trumps (0..21)
+const TRUMPS = [
+  { sv: "Narren",        en: "The Fool" },
+  { sv: "Magusen",       en: "The Magus" },
+  { sv: "Prästinnan",    en: "The Priestess" },
+  { sv: "Kejsarinnan",   en: "The Empress" },
+  { sv: "Kejsaren",      en: "The Emperor" },
+  { sv: "Hierofanten",   en: "The Hierophant" },
+  { sv: "Älskarna",      en: "The Lovers" },
+  { sv: "Vagnen",        en: "The Chariot" },
+  { sv: "Justering",     en: "Adjustment" },
+  { sv: "Eremiten",      en: "The Hermit" },
+  { sv: "Lyckohjulet",   en: "Fortune" },
+  { sv: "Lustan",        en: "Lust" },
+  { sv: "Den Hängde",    en: "The Hanged Man" },
+  { sv: "Döden",         en: "Death" },
+  { sv: "Konsten",       en: "Art" },
+  { sv: "Djävulen",      en: "The Devil" },
+  { sv: "Tornet",        en: "The Tower" },
+  { sv: "Stjärnan",      en: "The Star" },
+  { sv: "Månen",         en: "The Moon" },
+  { sv: "Solen",         en: "The Sun" },
+  { sv: "Aeonen",        en: "The Aeon" },
+  { sv: "Universum",     en: "The Universe" },
+];
+
+function tarotFor(docosade, within, lang){
+  const d = ((docosade % 22) + 22) % 22;
+  const y = ((within   % 22) + 22) % 22;
+
+  const docTrump = TRUMPS[d][lang] || TRUMPS[d].sv;
+  const yrTrump  = TRUMPS[y][lang] || TRUMPS[y].sv;
+
+  return (lang === "sv")
+    ? `${yrTrump} i ${docTrump}`
+    : `${yrTrump} in the ${docTrump}`;
 }
 
 /** =========================
@@ -207,12 +256,21 @@ function moonPhaseInfo(date){
 
   return { frac, age, key };
 }
-
+function moonEmojiFromKey(key){
+  switch(key){
+    case "new": return "🌑";
+    case "waxingCrescent": return "🌒";
+    case "firstQuarter": return "🌓";
+    case "waxingGibbous": return "🌔";
+    case "full": return "🌕";
+    case "waningGibbous": return "🌖";
+    case "lastQuarter": return "🌗";
+    case "waningCrescent": return "🌘";
+    default: return "🌙";
+  }
+}
 /** =========================
  *  Resh times
- *  - sunrise/sunset locked to SAME local date (start local midnight)
- *  - noon = exact midpoint between sunrise & sunset
- *  - midnight = NEXT local midnight (always upcoming)
  *  ========================= */
 function searchRiseSetForLocalDate(observer, direction, dateLocal){
   const y = dateLocal.getFullYear();
@@ -270,6 +328,66 @@ const state = {
 };
 
 /** =========================
+ *  Modal content
+ *  ========================= */
+const RESH_CONTENT = {
+  sunrise: {
+    title_sv: "Resh – Soluppgång (Ra)",
+    title_en: "Resh – Sunrise (Ra)",
+    img: "public/resh/Ra.png",
+    text_sv: "Hell dig, du som är Ra i ditt uppgående, ja även dig som är Ra i din styrka. Du som färdas över himlen i din bark vid solens uppgång. Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret. Hell dig från nattens boningar.  ",
+    text_en: "Hail unto Thee who art Ra in Thy rising, yea, unto Thee who art Ra in Thy strength. Thou who travellest across the heavens in Thy bark at the uprising of the Sun. Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm. Hail unto Thee from the abodes of the Night.",
+  },
+  noon: {
+    title_sv: "Resh – Mitt på dagen (Ahathoor)",
+    title_en: "Resh – Noon (Ahathoor)",
+    img: "public/resh/Ahathoor.png",
+    text_sv: "Hell dig, du som är Ahathoor i din triumf, ja även dig som är Ahathoor i din skönhet. Du som färdas över himlen i din bark vid solens middagstimme. Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret. Hell dig från morgonens boningar.  ",
+    text_en: "Hail unto Thee who art Ahathoor in Thy triumph, yea, unto Thee who art Ahathoor in Thy beauty. Thou who travellest across the heavens in Thy bark at the hour of the Sun’s meridian. Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm. Hail unto Thee from the abodes of the Morning.",
+  },
+  sunset: {
+    title_sv: "Resh – Solnedgång (Tum)",
+    title_en: "Resh – Sunset (Tum)",
+    img: "public/resh/Tum.png",
+    text_sv: "Hell dig, du som är Tum i ditt nedgående, ja även dig som är Tum i din lycka. Du som färdas över himlen i din bark vid solens nedgång. Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret. Hell dig från dagens boningar.  ",
+    text_en: "Hail unto Thee who art Tum in Thy setting, yea, unto Thee who art Tum in Thy joy. Thou who travellest across the heavens in Thy bark at the going down of the Sun. Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm. Hail unto Thee from the abodes of the Day.",
+  },
+  midnight: {
+    title_sv: "Resh – Midnatt (Khephra)",
+    title_en: "Resh – Midnight (Khephra)",
+    img: "public/resh/Khepra.png",
+    text_sv: "Hell dig, du som är Khepra i ditt döljande, ja även dig som är Khepra i din tystnad. Du som färdas över himlen i din bark vid solens midnattstimme. Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret. Hell dig från aftonens boningar.  ",
+    text_en: "Hail unto Thee who art Khepra in Thy hiding, yea, unto Thee who art Khepra in Thy silence. Thou who travellest across the heavens in Thy bark at the hour of the Sun’s midnight. Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm. Hail unto Thee from the abodes of the Evening.",
+  },
+};
+
+function openReshModal(key){
+  const modal = document.getElementById("reshModal");
+  const media = document.getElementById("reshModalMedia");
+  const title = document.getElementById("reshModalTitle");
+  const text  = document.getElementById("reshModalText");
+  if (!modal || !media || !title || !text) return;
+
+  const data = RESH_CONTENT[key];
+  if (!data) return;
+
+  const isSv = state.lang === "sv";
+  title.textContent = isSv ? data.title_sv : data.title_en;
+  text.textContent  = isSv ? data.text_sv  : data.text_en;
+  media.style.backgroundImage = `url("${data.img}")`;
+
+  modal.classList.add("isOpen");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeReshModal(){
+  const modal = document.getElementById("reshModal");
+  if (!modal) return;
+  modal.classList.remove("isOpen");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+/** =========================
  *  UI helpers
  *  ========================= */
 function setText(id, text){
@@ -287,6 +405,9 @@ function renderReshGrid(rows){
   for (const r of rows){
     const div = document.createElement("div");
     div.className = "reshItem" + (r.next ? " next" : "");
+    div.dataset.resh = r.key;
+    div.setAttribute("role", "button");
+    div.setAttribute("tabindex", "0");
     div.innerHTML = `
       <div class="reshLeft"><span>${r.icon}</span><span>${r.label}</span></div>
       <div>${r.value}</div>
@@ -322,7 +443,6 @@ function computeAndRender(now = new Date()){
   const use = state.useGeo && state.coords ? state.coords : state.stockholm;
   const placeLabel = state.useGeo && state.coords ? t.placeLocal : t.placeStockholm;
 
-  // sunrise/noon/sunset computed for TODAY local date, midnight is always nextLocalMidnight(now)
   const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
   const resh = reshTimesForLocalDate(use.lat, use.lon, todayLocal, now);
 
@@ -331,7 +451,6 @@ function computeAndRender(now = new Date()){
   const sunset  = isValidDate(resh.sunset) ? resh.sunset : null;
   const midD    = isValidDate(resh.midnight) ? resh.midnight : null;
 
-  // Next Resh by time (after sunset -> midnight should win before tomorrow sunrise)
   const candidates = [
     { key:"sunrise",  icon:"🌅", label:t.sunrise,  when:sunrise },
     { key:"noon",     icon:"☀️", label:t.noon,     when:noonD },
@@ -347,29 +466,29 @@ function computeAndRender(now = new Date()){
   }
 
   setHTML("mainPanel", `
-    <div>☉ ${t.sun} in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
-    <div>☾ ${t.moon} in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
+    <div>☉ in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
+    <div>☾ in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
 
     <div class="anno">${anno}</div>
     <div class="tarot">${tarot}</div>
     <div class="ve">${normalDate}</div>
 
-    <div class="moon">🌕 ${t.moon}: ${phaseName} (${pct}%)</div>
+    <div class="moon">${moonEmojiFromKey(mp.key)} ${phaseName}</div>
     <div class="moonSub">${t.moonAge}: ${moonAge} ${t.days}</div>
   `);
 
   setText("reshTitle", t.reshTitle(placeLabel));
 
   const rows = [
-    { icon:"🌅", label:t.sunrise,  value: sunrise ? formatTimeLocal(sunrise) : "—" },
-    { icon:"☀️", label:t.noon,     value: noonD ? formatTimeLocal(noonD) : "—" },
-    { icon:"🌇", label:t.sunset,   value: sunset ? formatTimeLocal(sunset) : "—" },
-    { icon:"🌌", label:t.midnight, value: midD ? formatTimeLocal(midD) : "—" },
+    { key:"sunrise",  icon:"🌅", label:t.sunrise,  value: sunrise ? formatTimeLocal(sunrise) : "—" },
+    { key:"noon",     icon:"☀️", label:t.noon,     value: noonD ? formatTimeLocal(noonD) : "—" },
+    { key:"sunset",   icon:"🌇", label:t.sunset,   value: sunset ? formatTimeLocal(sunset) : "—" },
+    { key:"midnight", icon:"🌌", label:t.midnight, value: midD ? formatTimeLocal(midD) : "—" },
   ];
 
   if (next){
     for (const r of rows){
-      if (r.label === next.label) r.next = true;
+      if (r.key === next.key) r.next = true;
     }
   }
   renderReshGrid(rows);
@@ -381,7 +500,6 @@ function computeAndRender(now = new Date()){
     setText("countdown", "");
   }
 
-  // Next equinox (rounded to ~2h) shown in local time
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
@@ -442,14 +560,32 @@ function toggleLang(){
 }
 
 /** =========================
+ *  Events (modal + click)
+ *  ========================= */
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-close]")) return closeReshModal();
+  const cell = e.target.closest(".reshItem[data-resh]");
+  if (cell) openReshModal(cell.dataset.resh);
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeReshModal();
+  if (e.key === "Enter" || e.key === " ") {
+    const el = document.activeElement;
+    if (el && el.classList && el.classList.contains("reshItem") && el.dataset.resh){
+      e.preventDefault();
+      openReshModal(el.dataset.resh);
+    }
+  }
+});
+
+/** =========================
  *  Boot
  *  ========================= */
 function boot(){
-  // one-shot shimmer
   const card = document.getElementById("card");
   if (card) setTimeout(() => card.classList.remove("shimmer"), 1400);
 
-  // Buttons
   const geoBtn = document.getElementById("geoBtn");
   const langBtn = document.getElementById("langBtn");
   const resetBtn = document.getElementById("resetBtn");
@@ -458,7 +594,6 @@ function boot(){
   if (langBtn) langBtn.addEventListener("click", toggleLang);
   if (resetBtn) resetBtn.addEventListener("click", setStockholm);
 
-  // If user previously enabled geo, try again silently
   if (state.useGeo) tryEnableGeo();
 
   computeAndRender(new Date());

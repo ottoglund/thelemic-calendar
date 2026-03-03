@@ -1,43 +1,64 @@
 <!doctype html>
 <html lang="sv">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Thelemic Date</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Thelemic Date</title>
 
-    <!-- PWA -->
-    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="apple-touch-icon" href="%BASE_URL%icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
 
-    <!-- Stop white background flash early -->
-    <style>
-      html, body { height: 100%; }
-      body { margin: 0; background: #000; }
-    </style>
-  </head>
+  <!-- Prevent white flash -->
+  <style>
+    html, body { height: 100%; }
+    body { margin: 0; background: #000; }
+  </style>
+</head>
 
-  <body>
-    <div id="card" class="card shimmer">
-      <div class="topbar">
-        <button id="geoBtn" class="iconBtn" aria-label="Geo">📍</button>
-        <button id="langBtn" class="iconBtn" aria-label="Language">🌐</button>
-        <button id="resetBtn" class="iconBtn" aria-label="Reset">↺</button>
-      </div>
-
-      <div id="title" class="title"></div>
-
-      <div id="mainPanel" class="mainPanel"></div>
-
-      <div id="reshTitle" class="reshTitle"></div>
-      <div id="reshGrid" class="reshGrid"></div>
-
-      <div id="countdown" class="countdown"></div>
-      <div id="footerPanel" class="footer"></div>
+<body>
+  <div id="card" class="card shimmer">
+    <div class="topbar">
+      <button id="geoBtn" class="iconBtn" aria-label="Geo">📍</button>
+      <button id="langBtn" class="iconBtn" aria-label="Language">🌐</button>
+      <button id="resetBtn" class="iconBtn" aria-label="Reset">↺</button>
     </div>
 
-    <script type="module" src="/src/main.js"></script>
-  </body>
+    <div id="title" class="title"></div>
+
+    <div id="mainPanel" class="mainPanel"></div>
+
+    <div id="reshTitle" class="reshTitle"></div>
+    <div id="reshGrid" class="reshGrid"></div>
+
+    <div id="countdown" class="countdown"></div>
+    <div id="footerPanel" class="footer"></div>
+  </div>
+
+  <!-- ========================
+       Resh Modal
+  ========================= -->
+  <div id="reshModal" class="modal" aria-hidden="true">
+    <div class="modalBackdrop" data-close="1"></div>
+
+    <div class="modalSheet" role="dialog" aria-modal="true" aria-labelledby="reshModalTitle">
+      <button class="modalClose" type="button" data-close="1" aria-label="Close">×</button>
+
+      <div id="reshModalMedia" class="modalMedia"></div>
+
+      <div class="modalContent">
+        <div class="modalKicker">Resh</div>
+        <h2 id="reshModalTitle" class="modalTitle"></h2>
+        <div id="reshModalText" class="modalText"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================
+       Scripts
+       IMPORTANT: Astronomy FIRST
+  ========================= -->
+
+  <script src="vendor/astronomy.min.js"></script>
+  <script src="main.js"></script>
+
+</body>
 </html>
