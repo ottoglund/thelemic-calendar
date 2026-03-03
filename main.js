@@ -14,7 +14,6 @@ if (!Astronomy) {
   }
   throw new Error("Astronomy is not loaded (window.Astronomy is undefined).");
 }
-/* global Astronomy */
 
 /** =========================
  *  Språk/texter
@@ -22,8 +21,6 @@ if (!Astronomy) {
 const I18N = {
   sv: {
     title: (weekdayLatin) => weekdayLatin,
-    sun: "Sol",
-    moon: "Luna",
     moonAge: "Månålder",
     days: "dygn",
     reshTitle: (placeLabel) => `Resh (${placeLabel})`,
@@ -53,8 +50,6 @@ const I18N = {
   },
   en: {
     title: (weekdayLatin) => weekdayLatin,
-    sun: "Sol",
-    moon: "Luna",
     moonAge: "Moon age",
     days: "days",
     reshTitle: (placeLabel) => `Resh (${placeLabel})`,
@@ -101,6 +96,12 @@ const signLatinGen = [
   "Librae", "Scorpii", "Sagittarii", "Capricorni", "Aquarii", "Piscium",
 ];
 
+// Zodiac symbols (glyphs)
+const signSymbols = [
+  "♈","♉","♊","♋","♌","♍",
+  "♎","♏","♐","♑","♒","♓"
+];
+
 /** =========================
  *  Utilities
  *  ========================= */
@@ -111,9 +112,9 @@ function isValidDate(d){ return d instanceof Date && !isNaN(d.getTime()); }
 
 function formatLonAsSign(lonDeg){
   const lon = mod360(lonDeg);
-  const sign = Math.floor(lon / 30);
-  const deg = lon - sign * 30;
-  return { deg, sign: signLatinGen[sign] };
+  const signIndex = Math.floor(lon / 30);
+  const deg = lon - signIndex * 30;
+  return { deg, sign: signLatinGen[signIndex], symbol: signSymbols[signIndex] };
 }
 function formatTimeLocal(date){
   return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
@@ -195,9 +196,8 @@ function roman(n, upper = true){
 }
 
 /** =========================
- *  Tarot placeholder
+ *  Tarot (Thoth) trumps 0..21
  *  ========================= */
-// Thoth Tarot trumps (0..21)
 const TRUMPS = [
   { sv: "Narren",        en: "The Fool" },
   { sv: "Magusen",       en: "The Magus" },
@@ -269,6 +269,7 @@ function moonEmojiFromKey(key){
     default: return "🌙";
   }
 }
+
 /** =========================
  *  Resh times
  *  ========================= */
@@ -292,12 +293,10 @@ function searchRiseSetForLocalDate(observer, direction, dateLocal){
 
   return null;
 }
-
 function nextLocalMidnight(now){
   const m0 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
   return new Date(m0.getTime() + 24 * 3600 * 1000);
 }
-
 function reshTimesForLocalDate(lat, lon, dateLocal, now){
   const observer = new Astronomy.Observer(lat, lon, 0);
   const sunrise = searchRiseSetForLocalDate(observer, +1, dateLocal);
@@ -379,7 +378,6 @@ function openReshModal(key){
   modal.classList.add("isOpen");
   modal.setAttribute("aria-hidden", "false");
 }
-
 function closeReshModal(){
   const modal = document.getElementById("reshModal");
   if (!modal) return;
@@ -466,14 +464,14 @@ function computeAndRender(now = new Date()){
   }
 
   setHTML("mainPanel", `
-    <div>☉ in ${sunFmt.deg.toFixed(1)}° ${sunFmt.sign}</div>
-    <div>☾ in ${moonFmt.deg.toFixed(1)}° ${moonFmt.sign}</div>
+    <div><span class="pGlyph">☉</span> in ${sunFmt.deg.toFixed(1)}° <span class="zGlyph">${sunFmt.symbol}</span> ${sunFmt.sign}</div>
+<div><span class="pGlyph">☾</span> in ${moonFmt.deg.toFixed(1)}° <span class="zGlyph">${moonFmt.symbol}</span> ${moonFmt.sign}</div>
 
     <div class="anno">${anno}</div>
     <div class="tarot">${tarot}</div>
     <div class="ve">${normalDate}</div>
 
-    <div class="moon">${moonEmojiFromKey(mp.key)} ${phaseName}</div>
+    <div class="moon">${moonEmojiFromKey(mp.key)} ${phaseName} (${pct}%)</div>
     <div class="moonSub">${t.moonAge}: ${moonAge} ${t.days}</div>
   `);
 
@@ -487,19 +485,18 @@ function computeAndRender(now = new Date()){
   ];
 
   if (next){
-    for (const r of rows){
-      if (r.key === next.key) r.next = true;
-    }
+    for (const r of rows) if (r.key === next.key) r.next = true;
   }
   renderReshGrid(rows);
 
   if (next){
     const ms = next.when.getTime() - now.getTime();
     setText("countdown", `${t.nextResh}: ${next.icon} ${next.label} ${t.inWord} ${formatCountdown(ms)}`);
-  }else{
+  } else {
     setText("countdown", "");
   }
 
+  // Next equinox (rounded to ~2h)
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
