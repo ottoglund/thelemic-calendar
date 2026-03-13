@@ -704,5 +704,11 @@ function boot(){
   computeAndRender(new Date());
   setInterval(() => computeAndRender(new Date()), 1000);
 }
-
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((err) => {
+      console.error("Service worker registration failed:", err);
+    });
+  });
+}
 boot();
