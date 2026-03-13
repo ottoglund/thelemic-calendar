@@ -17,18 +17,24 @@
   --font-symbol: "Noto Sans Symbols 2", "Segoe UI Symbol", "Apple Symbols", sans-serif;
 }
 
-*{ box-sizing: border-box; }
+*{
+  box-sizing: border-box;
+}
 
-html, body{
+html,
+body{
   height: 100%;
 }
 
 body{
   margin: 0;
+  min-height: 100svh;
+  height: 100svh;
+  overflow: hidden;
   background: var(--bg);
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
   padding: calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
   font-family: var(--font-body);
   color: rgba(255,255,255,0.90);
@@ -36,10 +42,23 @@ body{
 
 .card{
   width: min(720px, 100%);
+  height: calc(
+    100svh
+    - (18px + env(safe-area-inset-top))
+    - (18px + env(safe-area-inset-bottom))
+  );
+  max-height: calc(
+    100svh
+    - (18px + env(safe-area-inset-top))
+    - (18px + env(safe-area-inset-bottom))
+  );
+  display: flex;
+  flex-direction: column;
   border-radius: 22px;
   border: 1px solid var(--stroke);
-  background: radial-gradient(1200px 700px at 50% -200px, rgba(212,175,55,0.12), rgba(0,0,0,0.0) 55%),
-              rgba(255,255,255,0.02);
+  background:
+    radial-gradient(1200px 700px at 50% -200px, rgba(212,175,55,0.12), rgba(0,0,0,0.0) 55%),
+    rgba(255,255,255,0.02);
   padding: 16px 16px 14px;
   position: relative;
   overflow: hidden;
@@ -47,9 +66,12 @@ body{
 }
 
 .topbar{
-  display:flex;
+  display: flex;
   justify-content: space-between;
   gap: 10px;
+  font-size: clamp(18px, 4.8vw, 22px);
+  letter-spacing: 0.5px;
+  flex: 0 0 auto;
 }
 
 .iconBtn{
@@ -61,18 +83,21 @@ body{
   padding: 10px 12px;
   font-size: 14px;
   line-height: 1;
+  cursor: pointer;
 }
 
 .title{
   margin-top: 10px;
-  text-align:center;
+  text-align: center;
   color: var(--gold);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 26px;
+  font-size: clamp(30px, 8.5vw, 40px);
+  line-height: 1.1;
   letter-spacing: 0.06em;
   text-transform: none;
   font-variant: small-caps;
+  flex: 0 0 auto;
 }
 
 .mainPanel{
@@ -83,13 +108,13 @@ body{
   background: var(--panel);
   line-height: 1.35;
   font-size: clamp(20px, 5.2vw, 24px);
-
-  text-align: center; /* bara centrering - ingen flex */
+  text-align: center;
+  flex: 0 0 auto;
+  min-height: 0;
 }
 
-/* Zodiac glyph styling (big + gold + real symbol font) */
+/* Zodiac glyph styling */
 .zGlyph{
-
   font-family: var(--font-symbol);
   color: var(--gold);
   font-size: 1.35em;
@@ -98,7 +123,8 @@ body{
   display: inline-block;
   transform: translateY(0.03em);
 }
-/* Sun/Moon glyph styling (same as zodiac, slightly bigger) */
+
+/* Sun/Moon glyph styling */
 .pGlyph{
   font-family: var(--font-symbol);
   color: var(--gold);
@@ -108,6 +134,7 @@ body{
   display: inline-block;
   transform: translateY(0.06em);
 }
+
 .anno{
   margin-top: 10px;
   color: var(--gold);
@@ -129,9 +156,9 @@ body{
 .moon{
   margin-top: 10px;
   color: rgba(255,255,255,0.92);
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 10px;
 }
 
@@ -143,33 +170,44 @@ body{
 
 .reshTitle{
   margin-top: 12px;
-  text-align:center;
+  text-align: center;
   color: var(--gold2);
   letter-spacing: 0.03em;
   font-size: 14px;
   font-family: var(--font-display);
+  flex: 0 0 auto;
 }
 
 .reshGrid{
   margin-top: 10px;
-  display:grid;
+  display: grid;
   gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 .reshItem{
-  display:flex;
+  display: flex;
   justify-content: space-between;
-  align-items:center;
+  align-items: center;
   padding: 10px 12px;
   border-radius: 16px;
   border: 1px solid var(--stroke2);
   background: var(--panel2);
   font-size: 15px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.reshItem:active{
+  transform: translateY(1px);
 }
 
 .reshLeft{
-  display:flex;
-  align-items:center;
+  display: flex;
+  align-items: center;
   gap: 10px;
   color: var(--gold2);
 }
@@ -181,25 +219,29 @@ body{
 
 .countdown{
   margin-top: 12px;
-  text-align:center;
+  text-align: center;
   color: var(--gold2);
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: clamp(22px, 6vw, 32px);
+  font-weight: 700;
+  line-height: 1.2;
+  flex: 0 0 auto;
 }
 
 .footer{
   margin-top: 12px;
-  text-align:center;
+  text-align: center;
   color: var(--muted);
   font-size: 12px;
   padding-bottom: 4px;
+  flex: 0 0 auto;
 }
 
-/* subtle gold shimmer, one-shot via JS removing .shimmer */
+/* subtle gold shimmer */
 .card.shimmer::after{
   content:"";
-  position:absolute;
-  inset:-50%;
+  position: absolute;
+  inset: -50%;
   background: linear-gradient(
     120deg,
     rgba(0,0,0,0) 35%,
@@ -210,14 +252,14 @@ body{
   );
   transform: translateX(-40%);
   animation: goldShimmer 1.15s ease-out forwards;
-  pointer-events:none;
+  pointer-events: none;
 }
 
 @keyframes goldShimmer{
   to { transform: translateX(40%); }
 }
 
-/* iOS readability bump (subtle) */
+/* iOS readability bump */
 @supports (-webkit-touch-callout: none) {
   body { -webkit-text-size-adjust: 100%; }
   .card { color: rgba(212,175,55,0.96); }
@@ -233,7 +275,9 @@ body{
   display: none;
 }
 
-.modal.isOpen{ display: block; }
+.modal.isOpen{
+  display: block;
+}
 
 .modalBackdrop{
   position: absolute;
@@ -243,15 +287,20 @@ body{
 
 .modalSheet{
   position: absolute;
-  left: 0; right: 0;
+  left: 0;
+  right: 0;
   bottom: 0;
   margin: 0 auto;
   width: min(720px, calc(100vw - 24px));
+  height: min(94svh, calc(100svh - 24px));
+  max-height: min(94svh, calc(100svh - 24px));
   border: 1px solid var(--stroke);
-  border-radius: 20px;
+  border-radius: 20px 20px 0 0;
   overflow: hidden;
-  background: rgba(0,0,0,0.90);
+  background: rgba(0,0,0,0.94);
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
 }
 
 .modalClose{
@@ -267,11 +316,13 @@ body{
   color: var(--gold);
   font-size: 26px;
   line-height: 1;
+  cursor: pointer;
 }
 
 .modalMedia{
-  position:relative;
-  height: min(38vh, 320px);
+  position: relative;
+  flex: 0 0 auto;
+  height: min(30svh, 260px);
   background-size: contain;
   background-position: top center;
   background-repeat: no-repeat;
@@ -280,8 +331,8 @@ body{
 
 .modalMedia::after{
   content:"";
-  position:absolute;
-  inset:0;
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     to bottom,
     rgba(0,0,0,0.10),
@@ -292,8 +343,11 @@ body{
 
 .modalContent{
   padding: 14px 16px 18px;
-  max-height: 46vh;
-  overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .modalKicker{
@@ -301,6 +355,7 @@ body{
   font-size: 14px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  flex: 0 0 auto;
 }
 
 .modalTitle{
@@ -308,98 +363,62 @@ body{
   font-size: clamp(22px, 6vw, 28px);
   color: var(--gold);
   font-family: var(--font-display);
+  flex: 0 0 auto;
 }
 
 .modalText{
   color: rgba(255,255,255,0.90);
   font-size: clamp(16px, 4.6vw, 18px);
-  line-height: 1.35;
-  white-space: pre-line;
-}
-
-/* Make Resh rows tappable */
-.reshItem{
-  cursor: pointer;
-  user-select: none;
-}
-.reshItem:active{
-  transform: translateY(1px);
+  line-height: 1.5;
+  white-space: normal;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 0;
+  padding-right: 10px;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Desktop/tablet: image beside text */
 @media (min-width: 560px){
   .modalSheet{
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    border-radius: 20px;
+    height: min(88svh, 760px);
+    max-height: min(88svh, 760px);
     display: grid;
     grid-template-columns: 42% 58%;
+    grid-template-rows: minmax(0, 1fr);
     align-items: stretch;
   }
+
   .modalMedia{
-    height: auto;
-    min-height: 320px;
+    height: 100%;
+    min-height: 0;
   }
+
   .modalContent{
+    height: 100%;
+    min-height: 0;
+  }
+
+  .modalText{
+    min-height: 0;
+    height: 0;
     max-height: none;
   }
 }
-
-/* =========================
-   iPhone: fill screen, no scroll (keeps layout)
-   ========================= */
-body{
-  min-height: 100svh;
-  height: 100svh;
-  overflow: hidden;
-  align-items: stretch;
-}
-
-.card{
-  height: calc(
-    100svh
-    - (18px + env(safe-area-inset-top))
-    - (18px + env(safe-area-inset-bottom))
-  );
-  max-height: calc(
-    100svh
-    - (18px + env(safe-area-inset-top))
-    - (18px + env(safe-area-inset-bottom))
-  );
-  display: flex;
-  flex-direction: column;
-}
-
-.mainPanel,
-.reshGrid{
-  min-height: 0;
-}
-
-.reshGrid{
-  flex: 1 1 auto;
-}
-
-.countdown{
-  margin-top: auto;
-}
-
-/* =========================
-   Text scaling
-   ========================= */
-.topbar{
-  font-size: clamp(18px, 4.8vw, 22px);
-  letter-spacing: 0.5px;
-}
-
-.title{
-  font-size: clamp(30px, 8.5vw, 40px);
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.mainPanel{
-  font-size: clamp(20px, 5.2vw, 24px);
-}
-
-.countdown{
-  font-size: clamp(22px, 6vw, 32px);
-  font-weight: 700;
-  line-height: 1.2;
+.weekdayGlyph{
+  color: inherit;
+  font-family: var(--font-symbol), var(--font-display), serif;
+  font-size: 1em;
+  font-weight: inherit;
+  line-height: 1;
+  vertical-align: baseline;
+  display: inline-block;
+  transform: translateY(-0.02em);
+  margin-right: 0.18em;
 }

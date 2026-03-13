@@ -90,6 +90,17 @@ const weekdayLatin = [
   "Dies Saturnii",
 ];
 
+// Planetglyph för veckodag
+const weekdayPlanetGlyphs = [
+  "☉", // Dies Solis
+  "☾", // Dies Lunae
+  "♂", // Dies Martis
+  "☿", // Dies Mercurii
+  "♃", // Dies Jovis
+  "♀", // Dies Veneris
+  "♄", // Dies Saturnii
+];
+
 // Zodiak-tecken (latin genitiv)
 const signLatinGen = [
   "Arietis", "Tauri", "Geminorum", "Cancri", "Leonis", "Virginis",
@@ -329,34 +340,128 @@ const state = {
 /** =========================
  *  Modal content
  *  ========================= */
+const RESH_APPEND_SV = `Yttersta förening blottad!<br>
+Jag tillber Din andedräkts makt,<br>
+Högste och fruktansvärde Gud,<br>
+Som får gudarna och döden<br>
+Att skälva inför Dig:<br>
+Jag, jag tillber dig!<br>
+Träd fram på Ras tron!<br>
+Öppna vägarna för Khu!<br>
+Lys upp vägarna för Ka!<br>
+Khabs vägar strömmar igenom<br>
+För att egga eller lugna mig!<br>
+Aum! låt det döda mig!<br>
+Så att ditt ljus är i mig; & dess röda låga är som ett svärd i min hand för att driva igenom din ordning.<br>
+Det finns en hemlig dörr som jag skall skapa för att instifta din väg i alla väderstreck, (dessa är bönerna, såsom du skrivit), som det är sagt:<br>
+Ljuset är mitt; dess strålar förtär<br>
+Mig: jag har skapat en hemlig dörr<br>
+Till Ra och Tums Hus,<br>
+till Khephra och Ahathoor.<br>
+Jag är din Thebier, O Mentu,<br>
+Profeten Ankh-af-na-khonsu!<br>
+Vid Bes-na-Maut mitt bröst jag slår;<br>
+Vid vise Ta-Nech väver jag min besvärjelse.<br>
+Visa din stjärnprakt, O Nuit!<br>
+Bjud in mig i ditt Hus att vistas,<br>
+O bevingade orm av ljus, Hadit!<br>
+Bliv kvar hos mig, Ra-Hoor-Khuit!`;
+
+const RESH_APPEND_EN = `Unity uttermost showed!<br>
+I adore the might of Thy breath,<br>
+Supreme and terrible God,<br>
+Who makest the gods and death<br>
+To tremble before Thee:<br>
+I, I adore thee!<br>
+Appear on the throne of Ra!<br>
+Open the ways of the Khu!<br>
+Lighten the ways of the Ka!<br>
+The ways of the Khabs run through<br>
+To stir me or still me!<br>
+Aum! let it fill me!<br>
+So that thy light is in me; & its red flame is as a sword in my hand to push thy order.<br>
+There is a secret door that I shall make to establish thy way in all the quarters, (these are the adorations, as thou hast written), as it is said:<br>
+The light is mine; its rays consume<br>
+Me: I have made a secret door<br>
+Into the House of Ra and Tum,<br>
+Of Khephra and of Ahathoor.<br>
+I am thy Theban, O Mentu,<br>
+The prophet Ankh-af-na-khonsu!<br>
+By Bes-na-Maut my breast I beat;<br>
+By wise Ta-Nech I weave my spell.<br>
+Show thy star-splendour, O Nuit!<br>
+Bid me within thine House to dwell,<br>
+O wingèd snake of light, Hadit!<br>
+Abide with me, Ra-Hoor-Khuit!`;
+
 const RESH_CONTENT = {
   sunrise: {
     title_sv: "Resh – Soluppgång (Ra)",
     title_en: "Resh – Sunrise (Ra)",
     img: "public/resh/Ra.png",
-    text_sv: "Hell dig, du som är Ra i ditt uppgående, ja även dig som är Ra i din styrka. Du som färdas över himlen i din bark vid solens uppgång. Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret. Hell dig från nattens boningar.  ",
-    text_en: "Hail unto Thee who art Ra in Thy rising, yea, unto Thee who art Ra in Thy strength. Thou who travellest across the heavens in Thy bark at the uprising of the Sun. Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm. Hail unto Thee from the abodes of the Night.",
+    text_sv: `Hell dig, du som är Ra i ditt uppgående,<br>
+ja även dig som är Ra i din styrka.<br>
+Du som färdas över himlen i din bark vid solens uppgång.<br>
+Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret.<br>
+Hell dig från nattens boningar.<br><br>
+${RESH_APPEND_SV}`,
+    text_en: `Hail unto Thee who art Ra in Thy rising,<br>
+yea, unto Thee who art Ra in Thy strength.<br>
+Thou who travellest across the heavens in Thy bark at the uprising of the Sun.<br>
+Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm.<br>
+Hail unto Thee from the abodes of the Night.<br><br>
+${RESH_APPEND_EN}`,
   },
   noon: {
     title_sv: "Resh – Mitt på dagen (Ahathoor)",
     title_en: "Resh – Noon (Ahathoor)",
     img: "public/resh/Ahathoor.png",
-    text_sv: "Hell dig, du som är Ahathoor i din triumf, ja även dig som är Ahathoor i din skönhet. Du som färdas över himlen i din bark vid solens middagstimme. Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret. Hell dig från morgonens boningar.  ",
-    text_en: "Hail unto Thee who art Ahathoor in Thy triumph, yea, unto Thee who art Ahathoor in Thy beauty. Thou who travellest across the heavens in Thy bark at the hour of the Sun’s meridian. Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm. Hail unto Thee from the abodes of the Morning.",
+    text_sv: `Hell dig, du som är Ahathoor i din triumf,<br>
+ja även dig som är Ahathoor i din skönhet.<br>
+Du som färdas över himlen i din bark vid solens middagstimme.<br>
+Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret.<br>
+Hell dig från morgonens boningar.<br><br>
+${RESH_APPEND_SV}`,
+    text_en: `Hail unto Thee who art Ahathoor in Thy triumph,<br>
+yea, unto Thee who art Ahathoor in Thy beauty.<br>
+Thou who travellest across the heavens in Thy bark at the hour of the Sun’s meridian.<br>
+Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm.<br>
+Hail unto Thee from the abodes of the Morning.<br><br>
+${RESH_APPEND_EN}`,
   },
   sunset: {
     title_sv: "Resh – Solnedgång (Tum)",
     title_en: "Resh – Sunset (Tum)",
     img: "public/resh/Tum.png",
-    text_sv: "Hell dig, du som är Tum i ditt nedgående, ja även dig som är Tum i din lycka. Du som färdas över himlen i din bark vid solens nedgång. Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret. Hell dig från dagens boningar.  ",
-    text_en: "Hail unto Thee who art Tum in Thy setting, yea, unto Thee who art Tum in Thy joy. Thou who travellest across the heavens in Thy bark at the going down of the Sun. Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm. Hail unto Thee from the abodes of the Day.",
+    text_sv: `Hell dig, du som är Tum i ditt nedgående,<br>
+ja även dig som är Tum i din lycka.<br>
+Du som färdas över himlen i din bark vid solens nedgång.<br>
+Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret.<br>
+Hell dig från dagens boningar.<br><br>
+${RESH_APPEND_SV}`,
+    text_en: `Hail unto Thee who art Tum in Thy setting,<br>
+yea, unto Thee who art Tum in Thy joy.<br>
+Thou who travellest across the heavens in Thy bark at the going down of the Sun.<br>
+Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm.<br>
+Hail unto Thee from the abodes of the Day.<br><br>
+${RESH_APPEND_EN}`,
   },
   midnight: {
     title_sv: "Resh – Midnatt (Khephra)",
     title_en: "Resh – Midnight (Khephra)",
     img: "public/resh/Khepra.png",
-    text_sv: "Hell dig, du som är Khepra i ditt döljande, ja även dig som är Khepra i din tystnad. Du som färdas över himlen i din bark vid solens midnattstimme. Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret. Hell dig från aftonens boningar.  ",
-    text_en: "Hail unto Thee who art Khepra in Thy hiding, yea, unto Thee who art Khepra in Thy silence. Thou who travellest across the heavens in Thy bark at the hour of the Sun’s midnight. Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm. Hail unto Thee from the abodes of the Evening.",
+    text_sv: `Hell dig, du som är Khepra i ditt döljande,<br>
+ja även dig som är Khepra i din tystnad.<br>
+Du som färdas över himlen i din bark vid solens midnattstimme.<br>
+Tahuti står i fören i sin prakt, och Ra Hoor står vid rodret.<br>
+Hell dig från aftonens boningar.<br><br>
+${RESH_APPEND_SV}`,
+    text_en: `Hail unto Thee who art Khepra in Thy hiding,<br>
+yea, unto Thee who art Khepra in Thy silence.<br>
+Thou who travellest across the heavens in Thy bark at the hour of the Sun’s midnight.<br>
+Tahuti standeth in the prow in His splendour, and Ra-Hoor abideth at the helm.<br>
+Hail unto Thee from the abodes of the Evening.<br><br>
+${RESH_APPEND_EN}`,
   },
 };
 
@@ -372,7 +477,7 @@ function openReshModal(key){
 
   const isSv = state.lang === "sv";
   title.textContent = isSv ? data.title_sv : data.title_en;
-  text.textContent  = isSv ? data.text_sv  : data.text_en;
+  text.innerHTML = isSv ? data.text_sv : data.text_en;
   media.style.backgroundImage = `url("${data.img}")`;
 
   modal.classList.add("isOpen");
@@ -419,8 +524,12 @@ function renderReshGrid(rows){
  *  ========================= */
 function computeAndRender(now = new Date()){
   const t = I18N[state.lang] || I18N.sv;
+  const dayIndex = now.getDay();
 
-  setText("title", t.title(weekdayLatin[now.getDay()]));
+  setHTML(
+    "title",
+    `<span class="weekdayGlyph">${weekdayPlanetGlyphs[dayIndex]}</span> ${t.title(weekdayLatin[dayIndex])}`
+  );
 
   const sun = Astronomy.SunPosition(now);
   const moon = Astronomy.EclipticGeoMoon(now);
@@ -465,7 +574,7 @@ function computeAndRender(now = new Date()){
 
   setHTML("mainPanel", `
     <div><span class="pGlyph">☉</span> in ${sunFmt.deg.toFixed(1)}° <span class="zGlyph">${sunFmt.symbol}</span> ${sunFmt.sign}</div>
-<div><span class="pGlyph">☾</span> in ${moonFmt.deg.toFixed(1)}° <span class="zGlyph">${moonFmt.symbol}</span> ${moonFmt.sign}</div>
+    <div><span class="pGlyph">☾</span> in ${moonFmt.deg.toFixed(1)}° <span class="zGlyph">${moonFmt.symbol}</span> ${moonFmt.sign}</div>
 
     <div class="anno">${anno}</div>
     <div class="tarot">${tarot}</div>
@@ -496,7 +605,6 @@ function computeAndRender(now = new Date()){
     setText("countdown", "");
   }
 
-  // Next equinox (rounded to ~2h)
   const y = now.getUTCFullYear();
   const eqThis = vernalEquinoxUTC(y);
   const eqNext = now.getTime() < eqThis.getTime() ? eqThis : vernalEquinoxUTC(y + 1);
