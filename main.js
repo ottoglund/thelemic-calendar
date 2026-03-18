@@ -354,8 +354,8 @@ För att egga eller lugna mig!<br>
 Aum! låt det döda mig!<br>
 Så att ditt ljus är i mig; & dess röda låga är som ett svärd i min hand för att driva igenom din ordning.<br>
 Det finns en hemlig dörr som jag skall skapa för att instifta din väg i alla väderstreck, (dessa är bönerna, såsom du skrivit), som det är sagt:<br>
-Ljuset är mitt; dess strålar förtär<br>
-Mig: jag har skapat en hemlig dörr<br>
+Ljuset är mitt; dess strålar förtär mig: <br>
+Jag har skapat en hemlig dörr<br>
 Till Ra och Tums Hus,<br>
 till Khephra och Ahathoor.<br>
 Jag är din Thebier, O Mentu,<br>
@@ -381,8 +381,8 @@ To stir me or still me!<br>
 Aum! let it fill me!<br>
 So that thy light is in me; & its red flame is as a sword in my hand to push thy order.<br>
 There is a secret door that I shall make to establish thy way in all the quarters, (these are the adorations, as thou hast written), as it is said:<br>
-The light is mine; its rays consume<br>
-Me: I have made a secret door<br>
+The light is mine; its rays consume me:<br>
+I have made a secret door<br>
 Into the House of Ra and Tum,<br>
 Of Khephra and of Ahathoor.<br>
 I am thy Theban, O Mentu,<br>
